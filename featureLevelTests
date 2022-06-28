@@ -1,0 +1,53 @@
+from math import log2
+import numpy as np
+from scipy import stats
+import pandas as pd
+from typing import Callable, Dict, Optional, Union
+
+from embedding import embedding
+
+def kl_divergence(p, q):
+    return sum(p[i] * log2(p[i]/q[i]) if p[i] > 0 and q[i] > 0 else 0 for i in range(len(p)))
+
+def js_divergence(p, q):
+    .5*(kl_divergence(p, q) + kl_divergence(q, p))
+
+'''
+function to calculate feature level tests:
+    KL Divergence
+    JS Divergence
+    KS Test
+'''
+def featureLevelTest(transformed_data: dict,
+                    test: Union["KS", "KL", "JS"] = "KS"):
+    '''
+    "transformed_data" is the dictionary we receive after dimension reduction 
+    where each key refers to a window 
+    (first one, transformed_data[0], by default, is transformed reference data)
+
+    Then, we iterate through each window starting from the second window ()
+    and calculate the test statistic for each dimension of:
+    test_stat(reference_data, window_data) => test_stat(transformed_data[0], transformed_data[window])
+
+    Once again, if we are only concerned with sudden drifts, then we'd just have 3 keys:
+    ref, h0, and h1 and 2 comparisons. Otherwise we will have (windows - 1) comparisons. 
+    '''
+    pairs_count = len(transformed_data) - 1
+    result = np.zeros((transformed_data, transformed_data[0].shape[0])) # distances or p-values
+    for window in range(1, pairs_count):
+        for dim in range(transformed_data[0].shape[0]):
+            if test == "KS":
+                result[window, dim] = \
+                    stats.ks_2samp(transformed_data[0][dim, :], transformed_data[window][dim, :])[1]
+            elif test == "KL":
+                result[window, dim] = \
+                    kl_divergence(transformed_data[0][dim, :], transformed_data[window][dim, :])[1]
+            elif test == "JS":
+                result[window, dim] = \
+                    js_divergence(transformed_data[0][dim, :], transformed_data[window][dim, :])[1]
+                
+
+
+        
+
+

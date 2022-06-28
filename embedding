@@ -1,0 +1,70 @@
+from typing import Callable, Dict, Optional, Union
+import numpy as np
+from sentence_transformers import SentenceTransformer
+from sklearn.decomposition import PCA, TruncatedSVD
+from scipy import stats
+
+from gensim.test.utils import common_texts
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+
+from baseModels import baseModels
+from samplingData import samplingData
+
+'''
+Embedding function broken down based on methods, and then for doc2vec further into sudden and gradual
+'''
+class embedding:
+    def __init__(self, 
+                data_ref: Optional[Union[np.ndarray, list, None]],
+                data_h0: Optional[Union[np.ndarray, list, None]],
+                data_h1: Union[np.ndarray, list], # "data" in sample_data_gradual
+                sample_size: int = 500, 
+                windows: int = 20,
+                drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
+                embedding_model: Union["Doc2Vec", "SBERT"] = "Doc2Vec",
+                model_name: Optional[Union[str, None]] = None):
+        self.data_ref = data_ref
+        self.data_h0  = data_h0
+        self.data_h1  = data_h1
+        self.sample_size = sample_size
+        self.windows = windows
+        self.drift_type = drift_type
+        self.embedding_model = embedding_model
+        self.model_name = model_name
+
+    def embedding(self):
+        sample_dict = samples(self.data_ref, self.data_h0, self.data_h1, 
+                            self.sample_size, self.windows, self.drift_type)
+        emb_dict = {}
+        model = doc2vec_base(sample_dict[0])
+        for i in range(len(sample_dict)):
+            if self.embedding_model == "Doc2Vec":
+                model = doc2vec_base(sample_dict[0]) # use data_ref for tagged documents
+                emb_dict[i]: model.infer_vector(sample_dict[i])
+            elif self.embedding_model == "SBERT":
+                model = sbert_base(self.model_name)
+                emb_dict[i] = model.encode(sample_dict[i])
+            else:
+                print("The model is not defined")
+        return emb_dict
+
+    # constructed with SBERT in mind
+    def dim_reduction(emb_dict: dict,
+                    transformation: Union["PCA", "SVD", "UMAP"],
+                    components: Optional[int] = 25,
+                    n_iters: Optional[int] = 7):
+        if transformation == "PCA":
+            model = PCA(n_components=components)
+        elif transformation == "SVD":
+            model = TruncatedSVD(n_components=components, n_iter= n_iters, random_state=42)
+        
+        # only looking at the first iteration for now
+        transformed_dict = {}
+        for window in range(len(emb_dict[0])):
+            model.fit(emb_dict[0][window].T)
+            transformed_data = np.asarray(model.components_)
+            transformed_dict[window] = transformed_data
+        return transformed_dict
+
+
+

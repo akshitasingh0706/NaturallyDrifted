@@ -1,0 +1,92 @@
+from typing import Callable, Dict, Optional, Union
+import numpy as np
+from sklearn.neighbors import KernelDensity
+
+from samplingData import samplingData
+from embedding import embedding
+
+
+samplingData = samplingData()
+embedding = embedding()
+
+class distributions:
+    def __init__(self, 
+                data_ref: Optional[Union[np.ndarray, list, None]],
+                data_h0: Optional[Union[np.ndarray, list, None]],
+                data_h1: Union[np.ndarray, list], # "data" in sample_data_gradual
+                sample_size: int = 500, 
+                windows: int = 20,
+                drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
+                embedding_model: Union["Doc2Vec", "SBERT"] = "Doc2Vec",
+                model_name: Optional[Union[str, None]] = None,
+                iterations: int = 500):
+        
+        self.data_ref = data_ref
+        self.data_h0  = data_h0
+        self.data_h1  = data_h1
+        self.sample_size = sample_size
+        self.windows = windows
+        self.drift_type = drift_type
+        self.embedding_model = embedding_model
+        self.model_name = model_name
+        self.iterations = iterations
+
+        self.bandwidth = .05
+        self.kernel = 'gaussian'
+
+    def kde(self): # ex. (bandwidth = .05, kernel = 'gaussian')
+        return KernelDensity(bandwidth = self.bandwidth, kernel = self.kernel)
+
+    def distributions_doc2vec(self):   
+        kde = kde(self)
+        # distributions across all iterations
+        distributions_across_iters = {}
+        for iter in range(self.iterations):
+            emb_dict = embedding(self.data_ref, self.data_h0, self.data_h1, 
+                                self.sample_size, self.windows, self.drift_type, 
+                                self.embedding_model, self.model_name)
+
+            '''
+            distributions for each data window in 1 iteration
+            ex. for sudden drift we will only have 3 distributions - ref, h0, h1
+            for gradual drifts, we will have distributions for each time window
+            '''
+            distributions_per_window = {} # distribution per data window
+            for data_window in emb_dict.keys():
+                data = np.atleast_2d(emb_dict[data_window]).T
+                kde.fit(data)
+                kde_score = kde.score_samples(data)
+                distributions_per_window[data_window] = kde_score
+            distributions_across_iters[iter] = distributions_per_window
+        return distributions_across_iters
+
+    def distributions_sbert(self, dimensions):
+
+        kde = KernelDensity(bandwidth = .05, kernel = 'gaussian')
+        distributions_across_iters = {}
+        for iters in range(self.iterations):
+            emb_dict = embedding(self.data_ref, self.data_h0, self.data_h1, 
+                                self.sample_size, self.windows, self.drift_type, 
+                                self.embedding_model, self.model_name)
+            distributions_per_window = {}
+            # for each data window (keys)
+            for data_window in emb_dict.keys():
+                '''
+                for each dimension in that data window 
+                ex. dimensions = 768 if the model_name = bert-base-uncased 
+                which goes through no encoding 
+                And if say it goes through PCA with n_components = 40, 
+                then the dimensions reduce to 40
+
+                "distributions" is a dictionary where each key is a dimension
+                all distributions are 
+                '''
+                distributions_per_dim = {}
+                for dim in range(dimensions):
+                    data = np.atleast_2d(emb_dict[data_window][:, dim]).T
+                    kde.fit(data)
+                    kde_score = kde.score_samples(data)
+                    distributions_per_dim[dim] = kde_score
+                distributions_per_window[data_window] = distributions_per_dim
+            distributions_across_iters[iters] = distributions_per_window
+        return distributions_across_iters

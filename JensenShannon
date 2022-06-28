@@ -1,0 +1,148 @@
+from math import log2
+import numpy as np
+from sklearn.neighbors import KernelDensity
+import pandas as pd
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from typing import Callable, Dict, Optional, Union
+from sentence_transformers import SentenceTransformer
+
+from gensim.test.utils import common_texts
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+
+def kde(bandwidth, kernel):
+    return KernelDensity(bandwidth = bandwidth, kernel = kernel)
+
+def doc2vec_base(data: Union[np.ndarray, list], 
+                    sample_size: int = 500, 
+                    vector_size: Optional[int] = 50,
+                    window: Optional[int] = 2,
+                    min_count: Optional[int] = 1
+                    ):
+    '''
+    data: dataset to get samples for "Tagged Documents"
+    sample_size: number of random samples from data to use
+    Doc2Vec params:
+        vector_size
+        window
+        min_count
+    '''
+    docs = np.random.choice(data, sample_size)
+    documents = [TaggedDocument(docs, [i]) for i, doc in enumerate(common_texts)]
+    model = Doc2Vec(documents, vector_size=50, window=2, min_count=1, workers=4)
+    return model
+
+def sbert_base(data: Union[np.ndarray, list], 
+               sample_size: int = 500, 
+               model_name = 'bert-base-uncased'
+                    ):
+    model = SentenceTransformer(model_name)
+    return model
+
+def kl_divergence(p, q):
+    return sum(p[i] * log2(p[i]/q[i]) if p[i] > 0 and q[i] > 0 else 0 for i in range(len(p)))
+
+def js_divergence(p, q):
+    .5*(kl_divergence(p, q) + kl_divergence(q, p))
+
+
+def jsd_sudden(data_ref: Union[np.ndarray, list],
+                data_h0: Union[np.ndarray, list],
+                data_h1: Union[np.ndarray, list],
+
+                sample_size: int = 500, 
+                iterations: int = 500,
+                model_name: str = 'bert-base-uncased',
+
+                method: Union["SBERT", "Doc2Vec"] = "Doc2Vec"):
+    '''
+    method: ex. Doc2Vec, SBERT etc.
+    '''
+
+    sample_ref = np.random.choice(data_ref, sample_size)
+    sample_h0 = np.random.choice(data_h0, sample_size)
+    sample_h1 = np.random.choice(data_h1, sample_size)
+
+    if method not in ["Doc2Vec", "SBERT"]:
+        print("The model is running into errors")
+    if method == "Doc2Vec":
+        model = doc2vec_base(data_ref, sample_size)
+        sample_ref =  model.infer_vector(sample_ref)
+        sample_h0 =  model.infer_vector(sample_h0)
+        sample_h1 =  model.infer_vector(sample_h1)
+    
+    if method == "SBERT":
+        model = sbert_base(data_ref, sample_size, model_name)
+        sample_ref =  model.infer_vector(sample_ref)
+        sample_h0 =  model.infer_vector(sample_h0)
+        sample_h1 =  model.infer_vector(sample_h1)       
+
+
+    
+    
+
+
+
+
+
+def get_kl2(X1, X2, iters):
+  kl_h0 = []
+  kl_corr = []
+
+  js_h0 = []
+  js_corr = []
+  for i in range(iters):
+      kde = KernelDensity(bandwidth = .05, kernel = 'gaussian')
+      docs = np.random.choice(X2, 500)
+      documents = [TaggedDocument(docs, [i]) for i, doc in enumerate(common_texts)]
+      model = Doc2Vec(documents, vector_size=50, window=2, min_count=1, workers=4)
+
+      ref = np.random.choice(X1, 500)
+      ref = model.infer_vector(ref)
+      data = np.atleast_2d(ref).T
+      kde.fit(data)
+      p_x = kde.score_samples(data)
+
+      h0 = np.random.choice(X1, 500)
+      h0 = model.infer_vector(h0)
+      data = np.atleast_2d(h0).T
+      kde.fit(data)
+      q_x_h0 = kde.score_samples(data)
+      kl_h0.append(kl_divergence(p_x, q_x_h0))
+      js_h0.append(.5*(kl_divergence(p_x, q_x_h0) + kl_divergence(q_x_h0, p_x)))
+
+      corr = np.random.choice(X2, 500)
+      corr = model.infer_vector(corr)
+      data = np.atleast_2d(corr).T
+      kde.fit(data)
+      q_x_corr = kde.score_samples(data)
+      kl_corr.append(kl_divergence(p_x, q_x_corr))
+      js_corr.append(.5*(kl_divergence(p_x, q_x_corr) + kl_divergence(q_x_corr, p_x)))
+      
+  return kl_h0, kl_corr, js_h0, js_corr
+
+def get_kl(X_ref, X_h0, X_corr, its):
+  kl_h0 = []
+  kl_corr = []
+
+  js_h0 = []
+  js_corr = []
+  for i in range(its):
+      kde = KernelDensity(bandwidth = .05, kernel = 'gaussian')
+      data = np.atleast_2d(X_ref[:, i]).T
+      kde.fit(data)
+      p_x = kde.score_samples(data)
+
+      data = np.atleast_2d(X_h0[:, i]).T
+      kde.fit(data)
+      q_x_h0 = kde.score_samples(data)
+      kl_h0.append(kl_divergence(p_x, q_x_h0))
+      js_h0.append(.5*(kl_divergence(p_x, q_x_h0) + kl_divergence(q_x_h0, p_x)))
+
+      data = np.atleast_2d(X_corr[:, i]).T
+      kde.fit(data)
+      q_x_corr = kde.score_samples(data)
+      kl_corr.append(kl_divergence(p_x, q_x_corr))
+      js_corr.append(.5*(kl_divergence(p_x, q_x_corr) + kl_divergence(q_x_corr, p_x)))
+  
+  return kl_h0, kl_corr, js_h0, js_corr

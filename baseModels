@@ -1,0 +1,26 @@
+from typing import Callable, Dict, Optional, Union
+from gensim.test.utils import common_texts
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+from sentence_transformers import SentenceTransformer
+
+class baseModels:
+    def doc2vec_base(self, sample_ref, 
+                        vector_size: Optional[int] = 50,
+                        window: Optional[int] = 2,
+                        min_count: Optional[int] = 1,
+                        workers: Optional[int] = 4):
+        '''
+        sample_ref: dataset to get samples for "Tagged Documents"
+        Doc2Vec params:
+            vector_size
+            window
+            min_count
+            workers
+        '''
+        documents = [TaggedDocument(sample_ref, [i]) for i, doc in enumerate(common_texts)]
+        model = Doc2Vec(documents, vector_size, window, min_count, workers)
+        return model
+
+    def sbert_base(self, model_name = 'bert-base-uncased'):
+        model = SentenceTransformer(model_name)
+        return model
