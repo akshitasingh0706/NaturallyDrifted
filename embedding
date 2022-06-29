@@ -19,10 +19,11 @@ class embedding:
                 data_h0: Optional[Union[np.ndarray, list, None]],
                 data_h1: Union[np.ndarray, list], # "data" in sample_data_gradual
                 sample_size: int = 500, 
-                windows: int = 20,
+                windows: Optional[int] = 20,
                 drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
                 embedding_model: Union["Doc2Vec", "SBERT"] = "Doc2Vec",
-                model_name: Optional[Union[str, None]] = None):
+                model_name: Optional[Union[str, None]] = None, 
+                transformation: Union["PCA", "SVD", "UMAP", None] = None):
         self.data_ref = data_ref
         self.data_h0  = data_h0
         self.data_h1  = data_h1
@@ -31,40 +32,59 @@ class embedding:
         self.drift_type = drift_type
         self.embedding_model = embedding_model
         self.model_name = model_name
+        self.transformation = transformation
 
-    def embedding(self):
-        sample_dict = samples(self.data_ref, self.data_h0, self.data_h1, 
-                            self.sample_size, self.windows, self.drift_type)
+    def embed_data(self):
+        sample = samplingData(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
+                               drift_type = self.drift_type, sample_size = self.sample_size, windows = self.windows)
+        sample_dict = sample.samples()
+        bases = baseModels(sample_ref = sample_dict[0], model_name = model_name)
         emb_dict = {}
-        model = doc2vec_base(sample_dict[0])
         for i in range(len(sample_dict)):
             if self.embedding_model == "Doc2Vec":
-                model = doc2vec_base(sample_dict[0]) # use data_ref for tagged documents
-                emb_dict[i]: model.infer_vector(sample_dict[i])
+                model = bases.doc2vec_base() # use data_ref for tagged documents
+                emb_dict[i] = model.infer_vector(sample_dict[i])
             elif self.embedding_model == "SBERT":
-                model = sbert_base(self.model_name)
+                model = bases.sbert_base()
                 emb_dict[i] = model.encode(sample_dict[i])
             else:
                 print("The model is not defined")
         return emb_dict
 
     # constructed with SBERT in mind
-    def dim_reduction(emb_dict: dict,
-                    transformation: Union["PCA", "SVD", "UMAP"],
+    def dim_reduction(self,
+                    emb_dict: Optional[dict] = None,
                     components: Optional[int] = 25,
                     n_iters: Optional[int] = 7):
-        if transformation == "PCA":
+        # embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
+        #               drift_type = self.drift_type, sample_size = self.sample_size, embedding_model = self.embedding_model)
+        # emb_dict = embs.embed_data()
+        emb_dict = self.embed_data()
+        # print(emb_dict)
+        if self.transformation == "PCA":
             model = PCA(n_components=components)
-        elif transformation == "SVD":
+        elif self.transformation == "SVD":
             model = TruncatedSVD(n_components=components, n_iter= n_iters, random_state=42)
+        else: 
+            print("The following dimension reudction technique is not yet supported")
         
+        '''
+        Doc2Vec is a little more complicated so we will skip dim-reduction with it for now
+        '''
         # only looking at the first iteration for now
         transformed_dict = {}
-        for window in range(len(emb_dict[0])):
-            model.fit(emb_dict[0][window].T)
+        for window in range(len(emb_dict)):
+            if np.ndim(emb_dict[0]) < 2:
+                break
+            model.fit(emb_dict[window].T)
             transformed_data = np.asarray(model.components_)
             transformed_dict[window] = transformed_data
         return transformed_dict
-
+         
+    def final_embeddings(self):
+      if self.transformation is None:
+          return self.embed_data()
+      else:
+          return self.dim_reduction()
 
 
