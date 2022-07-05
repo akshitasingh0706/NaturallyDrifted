@@ -1,54 +1,54 @@
-from typing import Callable, Dict, Optional, Union
-import numpy as np
-from sentence_transformers import SentenceTransformer
-from sklearn.decomposition import PCA, TruncatedSVD
-from scipy import stats
-
-from gensim.test.utils import common_texts
-from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-
-from baseModels import baseModels
-from samplingData import samplingData
-
-'''
-Embedding function broken down based on methods, and then for doc2vec further into sudden and gradual
-'''
 class embedding:
     def __init__(self, 
                 data_ref: Optional[Union[np.ndarray, list, None]],
                 data_h0: Optional[Union[np.ndarray, list, None]],
                 data_h1: Union[np.ndarray, list], # "data" in sample_data_gradual
+                test: Union["KS", "KL", "JS"],
                 sample_size: int = 500, 
                 windows: Optional[int] = 20,
                 drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
                 embedding_model: Union["Doc2Vec", "SBERT"] = "Doc2Vec",
                 model_name: Optional[Union[str, None]] = None, 
-                transformation: Union["PCA", "SVD", "UMAP", None] = None):
+                transformation: Union["PCA", "SVD", "UMAP", None] = None,
+                emb_iters: Optional[int] = None):
         self.data_ref = data_ref
         self.data_h0  = data_h0
         self.data_h1  = data_h1
+        self.test = test
         self.sample_size = sample_size
         self.windows = windows
         self.drift_type = drift_type
         self.embedding_model = embedding_model
         self.model_name = model_name
         self.transformation = transformation
+        self.emb_iters = emb_iters # relevant for KS which never gets to distributions
 
     def embed_data(self):
-        sample = samplingData(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
-                               drift_type = self.drift_type, sample_size = self.sample_size, windows = self.windows)
+        sample = samplingData(self.data_ref, self.data_h0, self.data_h1, 
+                               self.drift_type, self.sample_size, self.windows)
         sample_dict = sample.samples()
-        bases = baseModels(sample_ref = sample_dict[0], model_name = model_name)
+        # need to look into what sort of data to inlude in tagged documents (for now just the first X text pieces)
+        bases = baseModels(data = self.data_ref[:self.sample_size], sample_size = self.sample_size, model_name = self.model_name)
         emb_dict = {}
-        for i in range(len(sample_dict)):
-            if self.embedding_model == "Doc2Vec":
-                model = bases.doc2vec_base() # use data_ref for tagged documents
+
+        if self.embedding_model == "Doc2Vec":
+            model = bases.doc2vec_base()
+            for i in range(len(sample_dict)):
                 emb_dict[i] = model.infer_vector(sample_dict[i])
-            elif self.embedding_model == "SBERT":
-                model = bases.sbert_base()
+        elif self.embedding_model == "SBERT":
+            model = bases.sbert_base()
+            for i in range(len(sample_dict)):
                 emb_dict[i] = model.encode(sample_dict[i])
-            else:
-                print("The model is not defined")
+        else:
+            print("The model is not defined")
+        return emb_dict 
+                  
+    # only required for KS Test (which does not get to Distributions which is where we actually do iterations)
+    def embed_data_iters(self):
+        emb_dict = {}
+        for i in range(self.emb_iters):
+            temp_dict = self.embed_data()
+            emb_dict[i] = temp_dict
         return emb_dict
 
     # constructed with SBERT in mind
@@ -56,35 +56,35 @@ class embedding:
                     emb_dict: Optional[dict] = None,
                     components: Optional[int] = 25,
                     n_iters: Optional[int] = 7):
-        # embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
-        #               drift_type = self.drift_type, sample_size = self.sample_size, embedding_model = self.embedding_model)
-        # emb_dict = embs.embed_data()
         emb_dict = self.embed_data()
-        # print(emb_dict)
         if self.transformation == "PCA":
             model = PCA(n_components=components)
         elif self.transformation == "SVD":
             model = TruncatedSVD(n_components=components, n_iter= n_iters, random_state=42)
         else: 
             print("The following dimension reudction technique is not yet supported")
-        
         '''
         Doc2Vec is a little more complicated so we will skip dim-reduction with it for now
         '''
         # only looking at the first iteration for now
-        transformed_dict = {}
+        final_dict = {}
         for window in range(len(emb_dict)):
-            if np.ndim(emb_dict[0]) < 2:
-                break
             model.fit(emb_dict[window].T)
-            transformed_data = np.asarray(model.components_)
-            transformed_dict[window] = transformed_data
-        return transformed_dict
-         
+            final_data = np.asarray(model.components_).T
+            final_dict[window] = final_data
+        return final_dict
+      
     def final_embeddings(self):
-      if self.transformation is None:
-          return self.embed_data()
-      else:
-          return self.dim_reduction()
-
+      if self.embedding_model == "Doc2Vec":
+          if self.test == "KS":
+              return self.embed_data_iters()
+          elif self.test in ["KL", "JS"]:
+              return self.embed_data()
+          else:
+              print("This test is not included in the package as yet")
+      if self.embedding_model == "SBERT":
+          if self.transformation is None:
+              return self.embed_data()
+          else:
+              return self.dim_reduction()
 
