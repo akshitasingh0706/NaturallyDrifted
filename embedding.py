@@ -1,3 +1,12 @@
+from typing import Callable, Dict, Optional, Union
+import numpy as np
+from gensim.test.utils import common_texts
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+from sentence_transformers import SentenceTransformer
+
+from baseModels import baseModels 
+from sampling import samplingData
+
 class embedding:
     def __init__(self, 
                 data_ref: Optional[Union[np.ndarray, list, None]],

@@ -2,12 +2,8 @@ from typing import Callable, Dict, Optional, Union
 import numpy as np
 from sklearn.neighbors import KernelDensity
 
-from samplingData import samplingData
+from sampling import samplingData
 from embedding import embedding
-
-from typing import Callable, Dict, Optional, Union
-import numpy as np
-from sklearn.neighbors import KernelDensity
 
 class distributions:
     def __init__(self,
