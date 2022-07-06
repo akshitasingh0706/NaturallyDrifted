@@ -83,8 +83,6 @@ class distributions:
             for ww in emb_dict.keys(): # for each data window (keys)
                 dimensions = emb_dict[0].shape[1] # ex. if we chose PCA with n_comp = 25, then dimensions = 25
                 sent_size = emb_dict[0].shape[0] # generally, sample_size
-                print("dims", dimensions)
-                print("dims", sent_size)
                 '''
                 for each dimension in that data window 
                 ex. dimensions = 768 if the model_name = bert-base-uncased 

@@ -3,6 +3,8 @@ import numpy as np
 from gensim.test.utils import common_texts
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from sentence_transformers import SentenceTransformer
+from sklearn.decomposition import PCA, TruncatedSVD
+from scipy import stats
 
 from baseModels import baseModels 
 from sampling import samplingData
