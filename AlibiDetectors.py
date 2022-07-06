@@ -1,3 +1,4 @@
+from typing import Callable, Dict, Optional, Union
 import nlp
 import pandas as pd
 import numpy as np

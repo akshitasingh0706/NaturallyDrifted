@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.neighbors import KernelDensity
 
 from sampling import samplingData
+from baseModels import baseModels
 from embedding import embedding
 
 class distributions:

@@ -1,2 +1,4 @@
 nlp
 alibi-detect
+sentence_transformers
+torch

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from sampling import samplingData
 from baseModels import baseModels
 from embedding import embedding
+from distributions import distributions
 
 class detectors:
     def __init__(self, 
@@ -136,7 +137,7 @@ class detectors:
         # plotting KLD results
         if self.test == "KL":
             for window in range(kld.shape[0]):
-                plt.plot(kld[window, :30])
+                plt.plot(kld[window, :])
             plt.title("Distances for SBERT + KL Divergence")
             plt.legend(["ww-"+ str(i) for i in range(kld.shape[1])])
             plt.show()
@@ -144,7 +145,7 @@ class detectors:
         # plotting JSD results
         if self.test == "JS":
             for window in range(jsd.shape[0]):
-                plt.plot(jsd[window, :30])
+                plt.plot(jsd[window, :])
             plt.title("Distances for SBERT + JS Divergence")
             plt.legend(["ww-"+ str(i) for i in range(jsd.shape[1])])
             plt.show()

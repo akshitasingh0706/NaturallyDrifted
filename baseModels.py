@@ -5,7 +5,6 @@ from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from sentence_transformers import SentenceTransformer
 
 from sampling import samplingData
-from embedding import embedding
 
 model_name = "bert-base-uncased"
 class baseModels:
