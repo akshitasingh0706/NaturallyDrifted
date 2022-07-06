@@ -56,7 +56,7 @@ class AlibiDetectors:
         layers = [-_ for _ in range(1, self.n_layers + 1)]
 
         embedding = TransformerEmbedding(self.model_name, self.emb_type, layers)
-        tokens = self.tokenizer(list(X1[:self.tokenizer_size]), pad_to_max_length=True, 
+        tokens = self.tokenizer(list(self.data_ref[:self.tokenizer_size]), pad_to_max_length=True, 
                                 max_length= self.max_len, return_tensors='tf')
         x_emb = embedding(tokens)
         shape = (x_emb.shape[1],)
@@ -93,7 +93,7 @@ class AlibiDetectors:
         sample_dict = sample.samples()
 
         if self.drift_type == "Sudden":  
-            for i, data_name in enumerate(["X_h0, X_comp"]):
+            for i, data_name in enumerate(["X_h0", "X_comp"]):
                 data = sample_dict[i+1]
                 print("Drift results for ", data_name ,"data using ", self.test, "test:")
                 preds = cd.predict(data)

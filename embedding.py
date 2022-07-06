@@ -19,7 +19,7 @@ class embedding:
                 embedding_model: Union["Doc2Vec", "SBERT"] = "Doc2Vec",
                 model_name: Optional[Union[str, None]] = None, 
                 transformation: Union["PCA", "SVD", "UMAP", None] = None,
-                emb_iters: Optional[int] = None):
+                iterations: Optional[int] = None):
         self.data_ref = data_ref
         self.data_h0  = data_h0
         self.data_h1  = data_h1
@@ -30,7 +30,7 @@ class embedding:
         self.embedding_model = embedding_model
         self.model_name = model_name
         self.transformation = transformation
-        self.emb_iters = emb_iters # relevant for KS which never gets to distributions
+        self.iterations = iterations # relevant for KS which never gets to distributions
 
     def embed_data(self):
         sample = samplingData(self.data_ref, self.data_h0, self.data_h1, 
@@ -55,7 +55,7 @@ class embedding:
     # only required for KS Test (which does not get to Distributions which is where we actually do iterations)
     def embed_data_iters(self):
         emb_dict = {}
-        for i in range(self.emb_iters):
+        for i in range(self.iterations):
             temp_dict = self.embed_data()
             emb_dict[i] = temp_dict
         return emb_dict
@@ -96,4 +96,3 @@ class embedding:
               return self.embed_data()
           else:
               return self.dim_reduction()
-

@@ -51,7 +51,7 @@ class detectors:
         embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test, 
                         sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
                         embedding_model = self.embedding_model, model_name = self.model_name, 
-                        transformation = self.transformation, emb_iters = self.iters)
+                        transformation = self.transformation, iterations = self.iters)
         final_dict = embs.final_embeddings()  
         iterations = len(final_dict)
         windows = len(final_dict[0])
@@ -72,7 +72,8 @@ class detectors:
     def ks_sbert(self):
         embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test, 
                         sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
-                        model_name = self.model_name, transformation = self.transformation)
+                        model_name = self.model_name, transformation = self.transformation, 
+                        iterations = self.iters, embedding_model = self.embedding_model)
         final_dict = embs.final_embeddings()  
         windows = len(final_dict.keys())
         dimensions = final_dict[0].shape[1]

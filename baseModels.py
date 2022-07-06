@@ -6,7 +6,6 @@ from sentence_transformers import SentenceTransformer
 
 from sampling import samplingData
 
-model_name = "bert-base-uncased"
 class baseModels:
     def __init__(self, 
                 data, sample_size, 

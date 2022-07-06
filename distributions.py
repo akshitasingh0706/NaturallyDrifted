@@ -49,7 +49,7 @@ class distributions:
             embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test,
                             sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
                             embedding_model = self.embedding_model, model_name = self.model_name, 
-                            transformation = self.transformation, emb_iters = None)
+                            transformation = self.transformation, iterations = None)
             emb_dict = embs.final_embeddings()
             '''
             distributions for each data window in 1 iteration
@@ -74,14 +74,17 @@ class distributions:
         distributions_across_iters = {}
         for it in range(self.iterations):
             # if self.emb_dict is None:
-            embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
+            embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1,
                              sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
-                            model_name = self.model_name, transformation = self.transformation, test = self.test)
+                            model_name = self.model_name, transformation = self.transformation, test = self.test,
+                            embedding_model = self.embedding_model, iterations = None)
             emb_dict = embs.final_embeddings()
             distributions_per_window = {}          
             for ww in emb_dict.keys(): # for each data window (keys)
                 dimensions = emb_dict[0].shape[1] # ex. if we chose PCA with n_comp = 25, then dimensions = 25
                 sent_size = emb_dict[0].shape[0] # generally, sample_size
+                print("dims", dimensions)
+                print("dims", sent_size)
                 '''
                 for each dimension in that data window 
                 ex. dimensions = 768 if the model_name = bert-base-uncased 
