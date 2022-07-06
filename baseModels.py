@@ -37,3 +37,4 @@ class baseModels:
     def sbert_base(self):
         model = SentenceTransformer(self.model_name)
         return model
+        
