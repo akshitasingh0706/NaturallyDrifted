@@ -1,6 +1,20 @@
-# Drift Detection Pipeline
+NaturallyDrifted is drift detection library that focusses on drift detection in text data. 
 
-In this package, we present drift detection methods with a focus on text data. 
+# Table of Contents
+1. [Installation and Usage](#installation-and-usage)
+- Conda
+2. [Drift Detector Fundamentals](#drift-detector-fundamentals)
+
+
+<a name="installation-and-usage"/>
+
+# Installation and Usage
+
+sometext
+
+<a name="drift-detector-fundamentals"/>
+
+# Drift Detection Fundamentals
 
 ## Types of Drifts (based on data)
 
