@@ -6,6 +6,7 @@ NaturallyDrifted is drift detection library that focusses on drift detection in 
 - [Azure/Databricks](#azure)
 - [Local Environment (Jupyter Notebooks)](#jupyter)
 - [Note: How to select data for analyses](#select-data)
+- [Note: Review of Other function parameters](#other-func-params)
 2. [Drift Detector Fundamentals](#drift-detector-fundamentals)
 - [Types of Drifts (Based on Data, and Based on Time](#drift-types)
 - [Covariate Drifts - Drift Detection Tests](#covariate-drift-tests)
@@ -138,6 +139,38 @@ the only data the user would have access to at that point of time.
 - Therefore, for our purposes, we have tried to minimize the use of artifically perturbed data
 and instead rely on test data/data from far away time periods as our data_h1 source. 
 
+<a name="other-func-params"/>
+
+## Note: Decription of other relevant parameters
+#### test: str
+Specify the kind of drift detection test we want: "KS", "KL", "JS", "MMD", "LSDD" (discussed below).
+
+#### sample_size: int
+Decides the number of samples from each of the above 3 datasets that we would like to work with. For instance, if the entire training data is 100K sentences, we can use a sample_size = 500 to randomly sample 500 of those sentences. 
+
+#### drift_type: str
+Specify the drift type we are looking for, based on the time/frquency: "Sudden", "Gradual" (discussed below). 
+
+#### windows: int (optional)
+This parameter is only required for gradual/incremental drift detection. This decided the number of segments we would like to break the data into. 
+For instance, if data_h1 has 100K data points, and if we wish to detect drifts gradually over time, a proxy approach would be to break the data in sets of 5K points and then randomly sample from each set separately. 
+
+#### embedding_model: str
+This parameter decides the kind of embedding the text goes through. The embeddings we consider thus far are: \\
+a) SBERT: A Python framework for state-of-the-art sentence, text and image embeddings. \\ 
+b) Universal Sentence Encoders: USE encodes text into high dimensional vectors that can be used for text classification, semantic similarity, clustering, and other natural language tasks \\
+c) Doc2Vec: a generalization of Word2Vec, which in turn is an algorithm that uses a 
+neural network model to learn word associations from a large corpus of text
+
+#### SBERT_model: str
+This parameter is specific to the SBERT embedding models. If we choose to work with SBERT, we can specify the type of SBERT embedding out here. Ex. 'bert-base-uncased'
+
+#### transformation:
+Embeddings render multiple multi-dimensional vector spaces. For instance, USE results in 512 dimensions, and 'bert-base-uncased' results in 768 dimensions. For feature levels tests such  as KLD or JSD, such a large dimension might not be feasible to analyse, and thus we can reduce the dimensionality by selecting the most important components using methods such as PCA and SVD. 
+
+#### iterations: int
+We can run through multiple iterations of the embeddings to make our drift detection test more robust. For instance, if we only detect a drift on 1 out of 10 itertions, then we might be better off not flagging a drift at all.  
+
 <a name="drift-detector-fundamentals"/>
 
 # Drift Detection Fundamentals
@@ -229,7 +262,7 @@ LSDD is a method grounded in least squares, that estimates difference in distrib
 ## Types of Embedding Models
 
 ### Sentence Transformers (SBERT) 
-is a Python framework for state-of-the-art sentence, text and image embeddings. The initial work is described in the paper [Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks](https://www.sbert.net/). This framework can be used to compute sentence / text embeddings for more than 100 languages.
+SBERT is Python framework for state-of-the-art sentence, text and image embeddings. The initial work is described in the paper [Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks](https://www.sbert.net/). This framework can be used to compute sentence / text embeddings for more than 100 languages.
 
 ### Universal Sentence Encoders (USE)
 USE encodes text into high dimensional vectors that can be used for text classification, semantic similarity, clustering, and other natural language tasks. For further reading, refer to [Tensorflow-hub documentation](https://www.tensorflow.org/hub/tutorials/semantic_similarity_with_tf_hub_universal_encoder)
@@ -237,7 +270,7 @@ USE encodes text into high dimensional vectors that can be used for text classif
 ### Document Embeddings (Doc2Vec/ Word2Vec, Glove)
 
 #### Word2Vec
-An algorithm uses a neural network model to learn word associations from a large corpus of text. Once trained, such a model can detect synonymous words or suggest additional words for a partial sentence. For further reading, please refer to the paper [Efficient Estimation of Word Representations in Vector Space](https://arxiv.org/abs/1301.3781)
+An algorithm that uses a neural network model to learn word associations from a large corpus of text. Once trained, such a model can detect synonymous words or suggest additional words for a partial sentence. For further reading, please refer to the paper [Efficient Estimation of Word Representations in Vector Space](https://arxiv.org/abs/1301.3781)
 
 #### Doc2Vec
 An NLP tool for representing documents as a vector and is a generalizing of the word2vec method. For further usage guidance, please refer to the [Gensim documentation](https://radimrehurek.com/gensim/models/doc2vec.html)
