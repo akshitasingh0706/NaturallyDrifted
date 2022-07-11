@@ -9,10 +9,10 @@ from sampling import samplingData
 class baseModels:
     def __init__(self, 
                 data, sample_size, 
-                 model_name: Optional[Union[str, None]]):
+                 SBERT_model: Optional[Union[str, None]]):
         self.data = data
         self.sample_size = sample_size
-        self.model_name = model_name
+        self.SBERT_model = SBERT_model
 
     def doc2vec_base(self, 
                     # documents,
@@ -33,6 +33,6 @@ class baseModels:
         return model
 
     def sbert_base(self):
-        model = SentenceTransformer(self.model_name)
+        model = SentenceTransformer(self.SBERT_model)
         return model
         

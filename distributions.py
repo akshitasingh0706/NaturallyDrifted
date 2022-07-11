@@ -15,13 +15,106 @@ class distributions:
                 sample_size: int = 500, 
                 windows: int = 20,
                 drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
-                embedding_model: Union["Doc2Vec", "SBERT"] = "Doc2Vec",
+                embedding_model: Union["Doc2Vec", "SBERT", "USE"] = "Doc2Vec",
                 model_name: Optional[Union[str, None]] = None,
                 iterations: int = 500,
                 transformation: Optional[Union["PCA", "SVD", "UMAP", "UAE", None]] = None
-                #emb_dict: Optional[dict] = None
                  ):
-        # self.emb_dict = emb_dict
+        """
+        In this class, we construct distributions out of the embeddings we got from the "embedding" class. 
+        This is an optional class and is only required if we are running a distribution dependent test such 
+        as KLD or JSD. 
+        
+        Args
+        ----------
+        data_ref : np.ndarray, list
+            This is the dataset on which is used as the reference/baseline when detecting drifts. 
+            For instance, if our test of choice is KL Divergence, then we will declare a possible
+            drift based on whether any other data is close in distribution to data_ref. 
+            Generally, the goal is to have all future datasets be as close (in embeddings, distributions)
+            to data_ref, which is how we conclude that there is no drift in the dataset.  
+            
+            data_ref is typically sampled from the "training data". During real world application, 
+            this is the data on which the test will be modeled on because this would generally be 
+            the only data the user would have access to at that point of time. 
+
+        data_h0 :  np.ndarray, list (optional)
+            This is generally the same dataset as data_ref (or a stream that comes soon after).
+            We use the lack of drift in data_h0 (with data_ref as our reference) as the necessary 
+            condition to decide the robustness of the drift detection method. If the method ends up 
+            detecting a drift in data_h0 itself, we know it is most likely not doing a good job. 
+            This is because both data_ref and data_h0 are expected to be coming from the same source 
+            and hence should result in similar embeddings and distributions. 
+
+            If the user is confident in the efficacy of their drift detection method, then it would be 
+            worthwhile to consider change the size of data_ref and data_h0 and then re-evaluate detector
+            performance, before proceeding to data_h1. 
+
+        data_h1: np.ndarray, list
+            This is the primary dataset on which we can expect to possibly detect a drift. In the real 
+            world, this would usually be the dataset we get post model deployment. To test detectors, a
+            convenient (but not necessarily the best) practice is to take the test data and use that as
+            our proxy for the deployed dataset. 
+
+            Multiple research papers and libraries tend to also use "perturbed" data for their choice of
+            data_h1. Perturbations can include corruptions in images (vision data) or introduction of 
+            unneccessary words and phrases (text data). This is generally the first step in testing the 
+            efficacy of a drift detection method. Once again, if the detectors fails to detect a drift
+            on manually perturbed data, then its quite likely it will not be able to detect drifts in 
+            the real, deployed data as well. 
+
+            Therefore, for our purposes, we have tried to minimize the use of artifically perturbed data
+            and instead rely on test data/data from far away time periods as our data_h1 source. 
+
+        test: str
+            Here, we specify the kind of drift detection test we want (KS, KLD, JSD, MMD, LSDD).
+            The descriptions for each are discussed in the README.md.  
+
+        sample_size: int
+            This parameter decides the number of samples from each of the above 3 datasets that we would
+            like to work with. For instance, if the entire training data is 100K sentences, we can use
+            a sample_size = 500 to randomly sample 500 of those sentences. 
+
+        drift_type: str
+            As discussed in the README, there are many different types of drifts. Here we specify
+            the drift type we are looking for, based on the time/frquency. drift_type asks us 
+            to specify whether we want to detect sudden drifts or more gradual drifts. 
+
+        windows: int (optional)
+            This decided the number of segments we would like to break the data into. 
+            This parameter is only required for gradual/incremental drift detection. 
+            For instance, if data_h1 has 100K data points, and if we wish to detect drifts
+            gradually over time, a proxy approach would be to break the data in sets of 5K points
+            and then randomly sample from each set separately. 
+        
+        embedding_model: str
+            This is the principle parameter of this class. It decided the kind of embedding the text 
+            goes through. The embeddings we consider thus far are: 
+            a) SBERT: A Python framework for state-of-the-art sentence, text and image embeddings. 
+            b) Universal Sentence Encoders: USE encodes text into high dimensional vectors that can be 
+            used for text classification, semantic similarity, clustering, and other natural language tasks
+            c) Doc2Vec: a generalization of Word2Vec, which in turn is an algorithm that uses a 
+            neural network model to learn word associations from a large corpus of text
+        
+        SBERT_model: str
+            This parameter is specific to the SBERT embedding models. If we choose to work with SBERT,
+            we can specify the type of SBERT embedding out here. Ex. 'bert-base-uncased'
+        
+        transformation:
+            Embeddings render multiple multi-dimensional vector spaces. For instance, USE results in 512
+            dimensions, and 'bert-base-uncased' results in 768 dimensions. For feature levels tests such 
+            as KLD or JSD, the 
+
+        iterations: int
+            We can run through multiple iterations of the embeddings to make our drift detection test more
+            robust. For instance, if we only detect a drift on 1 out of 10 itertions, then we might be 
+            better off not flagging a drift at all.  
+
+        Returns
+        ----------  
+        A dictionary containing the distributions as decided by the choice of embedding model and 
+        drift detection test type
+        """
         self.data_ref = data_ref
         self.data_h0  = data_h0
         self.data_h1  = data_h1
@@ -40,7 +133,15 @@ class distributions:
     def kde(self): # ex. (bandwidth = .05, kernel = 'gaussian')
         return KernelDensity(bandwidth = self.bandwidth, kernel = self.kernel)
 
-    def distributions_doc2vec(self):   
+    def distributions_doc2vec(self): 
+        """
+        Constructs distributions for Doc2Vec embeddings 
+
+        Returns
+        ----------  
+          a dictionary containing the distributions as decided by the choice of embedding model and 
+        drift detection test type
+        """  
         kde = self.kde()
         # distributions across all iterations
         distributions_across_iters = {}
@@ -65,7 +166,15 @@ class distributions:
             distributions_across_iters[it] = distributions_per_window
         return distributions_across_iters
 
-    def distributions_sbert(self):
+    def distributions_seneconders(self):
+        """
+        Constructs distributions for SBERT or USE embeddings 
+
+        Returns
+        ----------  
+        a dictionary containing the distributions as decided by the choice of embedding model and 
+        drift dete
+        """
         embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test, 
                         sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
                         embedding_model = self.embedding_model, model_name = self.model_name, transformation = self.transformation)
@@ -101,8 +210,16 @@ class distributions:
         return distributions_across_iters
     
     def final_distributions(self):
-        if self.embedding_model == "SBERT":
-            return self.distributions_sbert()
+        """
+        Constructs distributions for the selected embeddings 
+
+        Returns
+        ----------  
+        a dictionary containing the distributions as decided by the choice of embedding model and 
+        drift dete
+        """
+        if self.embedding_model in ["SBERT", "USE"]:
+            return self.distributions_seneconders()
         elif self.embedding_model == "Doc2Vec":
             return self.distributions_doc2vec()
         else:
