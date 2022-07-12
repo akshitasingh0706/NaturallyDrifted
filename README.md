@@ -116,7 +116,7 @@ pip install -r requirements.txt
 
 <a name="select-data"/>
 
-## A note on selecting data for analyses
+## Note 1: Selecting data for analyses
 To detect drifts, we need to look into the "reference data" as well as the comparison data. A convenient (but not the only) way to divide our data for our analyses is as follows:
 #### data_ref
 (type: np.ndarray, list)
@@ -141,7 +141,7 @@ and instead rely on test data/data from far away time periods as our data_h1 sou
 
 <a name="other-func-params"/>
 
-## Note: Decription of other relevant parameters
+## Note 2: Decription of other relevant parameters
 #### test: str
 Specify the kind of drift detection test we want: "KS", "KL", "JS", "MMD", "LSDD" (discussed below).
 
@@ -180,7 +180,7 @@ We can run through multiple iterations of the embeddings to make our drift detec
 
 ## Drift Types
 
-### Based on Data (What drifted?)
+### Based on Data (What kind of drift took place (features, labels, model/concept)?)
 
 ![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/trials/images/DriftTypes_Data.png?raw=true)
 
@@ -196,7 +196,7 @@ When process generating *y* from *x* drifts:  **P(Y|X) != P<sub>ref</sub>(Y|X)**
 \\
 For further reading, please refer to [Alibi Detect Documentation](https://docs.seldon.io/projects/alibi-detect/en/stable/cd/background.html)
 
-### Based on time/frequency (When drifted?)
+### Based on time/frequency (When did the drift happen?)
 
 ![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/trials/images/DriftTypes_Time.png?raw=true)
 
