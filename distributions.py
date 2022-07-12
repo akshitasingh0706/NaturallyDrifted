@@ -16,7 +16,7 @@ class distributions:
                 windows: int = 20,
                 drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
                 embedding_model: Union["Doc2Vec", "SBERT", "USE"] = "Doc2Vec",
-                model_name: Optional[Union[str, None]] = None,
+                SBERT_model: Optional[Union[str, None]] = None,
                 iterations: int = 500,
                 transformation: Optional[Union["PCA", "SVD", "UMAP", "UAE", None]] = None
                  ):
@@ -101,9 +101,10 @@ class distributions:
             we can specify the type of SBERT embedding out here. Ex. 'bert-base-uncased'
         
         transformation:
-            Embeddings render multiple multi-dimensional vector spaces. For instance, USE results in 512
+            Embeddings render multiple multi-dimensional vector spaces. For instance, USE results in 512 
             dimensions, and 'bert-base-uncased' results in 768 dimensions. For feature levels tests such 
-            as KLD or JSD, the 
+            as KLD or JSD, such a large dimension might not be feasible to analyse, and thus we can reduce 
+            the dimensionality by selecting the most important components using methods such as PCA and SVD.
 
         iterations: int
             We can run through multiple iterations of the embeddings to make our drift detection test more
@@ -122,7 +123,7 @@ class distributions:
         self.windows = windows
         self.drift_type = drift_type
         self.embedding_model = embedding_model
-        self.model_name = model_name
+        self.SBERT_model= SBERT_model
         self.iterations = iterations
         self.transformation = transformation
         self.test = test
@@ -149,7 +150,7 @@ class distributions:
             # if self.emb_dict is None:
             embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test,
                             sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
-                            embedding_model = self.embedding_model, model_name = self.model_name, 
+                            embedding_model = self.embedding_model, SBERT_model = self.SBERT_model, 
                             transformation = self.transformation, iterations = None)
             emb_dict = embs.final_embeddings()
             '''
@@ -177,7 +178,7 @@ class distributions:
         """
         embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test, 
                         sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
-                        embedding_model = self.embedding_model, model_name = self.model_name, transformation = self.transformation)
+                        embedding_model = self.embedding_model, SBERT_model = self.SBERT_model, transformation = self.transformation)
         final_dict = embs.final_embeddings()  
         kde = KernelDensity(bandwidth = .05, kernel = 'gaussian')
         distributions_across_iters = {}
@@ -185,7 +186,7 @@ class distributions:
             # if self.emb_dict is None:
             embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1,
                              sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
-                            model_name = self.model_name, transformation = self.transformation, test = self.test,
+                            SBERT_model = self.SBERT_model, transformation = self.transformation, test = self.test,
                             embedding_model = self.embedding_model, iterations = None)
             emb_dict = embs.final_embeddings()
             distributions_per_window = {}          
@@ -194,7 +195,7 @@ class distributions:
                 sent_size = emb_dict[0].shape[0] # generally, sample_size
                 '''
                 for each dimension in that data window 
-                ex. dimensions = 768 if the model_name = bert-base-uncased 
+                ex. dimensions = 768 if the SBERT_model = bert-base-uncased 
                 which goes through no encoding 
                 And if say it goes through PCA with n_components = 40, 
                 then the dimensions reduce to 40

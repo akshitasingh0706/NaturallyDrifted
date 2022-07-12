@@ -10,7 +10,7 @@ from baseModels import baseModels
 from embedding import embedding
 from distributions import distributions
 
-class run:
+class detectors:
     def __init__(self, 
                 data_ref: Optional[Union[np.ndarray, list, None]],
                 data_h0: Optional[Union[np.ndarray, list, None]],
@@ -20,7 +20,7 @@ class run:
                 windows: Optional[int] = 20,
                 drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
                 embedding_model: Union["Doc2Vec", "SBERT", "USE"] = "Doc2Vec",
-                model_name: Optional[Union[str, None]] = None, 
+                SBERT_model: Optional[Union[str, None]] = None, 
                 transformation: Union["PCA", "SVD", "UMAP", None] = None,
                 iterations = 20):
         """
@@ -104,9 +104,10 @@ class run:
             we can specify the type of SBERT embedding out here. Ex. 'bert-base-uncased'
         
         transformation:
-            Embeddings render multiple multi-dimensional vector spaces. For instance, USE results in 512
+            Embeddings render multiple multi-dimensional vector spaces. For instance, USE results in 512 
             dimensions, and 'bert-base-uncased' results in 768 dimensions. For feature levels tests such 
-            as KLD or JSD, the 
+            as KLD or JSD, such a large dimension might not be feasible to analyse, and thus we can reduce 
+            the dimensionality by selecting the most important components using methods such as PCA and SVD.
 
         iterations: int
             We can run through multiple iterations of the embeddings to make our drift detection test more
@@ -122,7 +123,7 @@ class run:
         self.windows = windows
         self.drift_type = drift_type
         self.embedding_model = embedding_model
-        self.model_name = model_name
+        self.SBERT_model = SBERT_model
         self.transformation = transformation
         self.iterations = iterations
 
@@ -170,7 +171,7 @@ class run:
         """
         embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test, 
                         sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
-                        embedding_model = self.embedding_model, model_name = self.model_name, 
+                        embedding_model = self.embedding_model, SBERT_model = self.SBERT_model, 
                         transformation = self.transformation, iterations = self.iterations)
         final_dict = embs.final_embeddings()  
         iterations = len(final_dict)
@@ -199,7 +200,7 @@ class run:
         """
         embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test, 
                         sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
-                        model_name = self.model_name, transformation = self.transformation, 
+                        SBERT_model = self.SBERT_model, transformation = self.transformation, 
                         iterations = self.iterations, embedding_model = self.embedding_model)
         final_dict = embs.final_embeddings()  
         windows = len(final_dict.keys())
@@ -221,7 +222,7 @@ class run:
         """
         distrs = distributions(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test, 
                         sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
-                        embedding_model = self.embedding_model, model_name = self.model_name, 
+                        embedding_model = self.embedding_model, SBERT_model = self.SBERT_model, 
                         transformation = self.transformation, iterations = self.iterations)
         final_dict = distrs.final_distributions() 
 
@@ -261,7 +262,7 @@ class run:
         """
         distrs = distributions(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test,
                         sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
-                        model_name = self.model_name, embedding_model = self.embedding_model,
+                        SBERT_model = self.SBERT_model, embedding_model = self.embedding_model,
                         transformation = self.transformation, iterations = self.iterations)
         final_dict = distrs.final_distributions() 
         windows = len(final_dict[0].keys())
@@ -278,7 +279,7 @@ class run:
         if self.test == "KL":
             for window in range(kld.shape[0]):
                 plt.plot(kld[window, :])
-            plt.title("Distances for", self.embedding_model, "and",  self.test)
+            plt.title("Distances for " + self.embedding_model + " and " +  self.test)
             plt.legend(["ww-"+ str(i) for i in range(kld.shape[1])])
             plt.show()
 
@@ -286,7 +287,7 @@ class run:
         if self.test == "JS":
             for window in range(jsd.shape[0]):
                 plt.plot(jsd[window, :])
-            plt.title("Distances for", self.embedding_model, "and",  self.test)
+            plt.title("Distances for " + self.embedding_model + " and " +  self.test)
             plt.legend(["ww-"+ str(i) for i in range(jsd.shape[1])])
             plt.show()
         return kld, jsd
