@@ -4,6 +4,7 @@ class imports:
         from baseModels import baseModels
         from embedding import embedding
         from distributions import distributions
-        from myDetectors import detectors
-        from AlibiDetectors import AlibiDetectors
-        return samplingData, baseModels, embedding, distributions, detectors, AlibiDetectors
+        from myDetectors import myDetectors
+        from alibiDetectors import alibiDetectors
+        from allDetectors import allDetectors
+        return samplingData, baseModels, embedding, distributions, myDetectors, alibiDetectors, allDetectors

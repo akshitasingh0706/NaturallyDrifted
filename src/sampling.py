@@ -120,14 +120,3 @@ class samplingData:
                 return self.sample_data_gradual()
         else:
             print("This is not one of the 2 drift types - Sudden or Gradual")  
-
-
-
-
-
-
-# Archive
-
-            # sample_dict = sample_data_sudden(data_ref, data_h0, data_h1, sample_size)        
-            # sample_ref, sample_h0, sample_h1 = sample_dict[0], sample_dict[1], sample_dict[2]
-            # return sample_ref, sample_h0, sample_h1

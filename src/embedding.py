@@ -14,7 +14,8 @@ class embedding:
                 data_ref: Optional[Union[np.ndarray, list, None]],
                 data_h0: Optional[Union[np.ndarray, list, None]],
                 data_h1: Union[np.ndarray, list], # "data" in sample_data_gradual
-                test: Union["KS", "KL", "JS"],
+                sample_dict: Optional[Dict] = None,
+                test: Union["KS", "KL", "JS"] = 'JS',
                 sample_size: int = 500, 
                 windows: Optional[int] = 20,
                 drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
@@ -30,43 +31,20 @@ class embedding:
         Args
         ----------
         data_ref : np.ndarray, list
-            This is the dataset on which is used as the reference/baseline when detecting drifts. 
-            For instance, if our test of choice is KL Divergence, then we will declare a possible
-            drift based on whether any other data is close in distribution to data_ref. 
-            Generally, the goal is to have all future datasets be as close (in embeddings, distributions)
-            to data_ref, which is how we conclude that there is no drift in the dataset.  
-            
-            data_ref is typically sampled from the "training data". During real world application, 
-            this is the data on which the test will be modeled on because this would generally be 
-            the only data the user would have access to at that point of time. 
+            Dataset on which model is trained (ex: training dataset). We compare a drift with a
+            reference to this distribution.
 
         data_h0 :  np.ndarray, list (optional)
-            This is generally the same dataset as data_ref (or a stream that comes soon after).
+            Generally, the same dataset as data_ref (or a stream that comes soon after).
             We use the lack of drift in data_h0 (with data_ref as our reference) as the necessary 
-            condition to decide the robustness of the drift detection method. If the method ends up 
-            detecting a drift in data_h0 itself, we know it is most likely not doing a good job. 
-            This is because both data_ref and data_h0 are expected to be coming from the same source 
-            and hence should result in similar embeddings and distributions. 
-
-            If the user is confident in the efficacy of their drift detection method, then it would be 
-            worthwhile to consider change the size of data_ref and data_h0 and then re-evaluate detector
-            performance, before proceeding to data_h1. 
+            condition to decide the robustness of the drift detection method. 
 
         data_h1: np.ndarray, list
-            This is the primary dataset on which we can expect to possibly detect a drift. In the real 
-            world, this would usually be the dataset we get post model deployment. To test detectors, a
-            convenient (but not necessarily the best) practice is to take the test data and use that as
-            our proxy for the deployed dataset. 
-
-            Multiple research papers and libraries tend to also use "perturbed" data for their choice of
-            data_h1. Perturbations can include corruptions in images (vision data) or introduction of 
-            unneccessary words and phrases (text data). This is generally the first step in testing the 
-            efficacy of a drift detection method. Once again, if the detectors fails to detect a drift
-            on manually perturbed data, then its quite likely it will not be able to detect drifts in 
-            the real, deployed data as well. 
-
-            Therefore, for our purposes, we have tried to minimize the use of artifically perturbed data
-            and instead rely on test data/data from far away time periods as our data_h1 source. 
+            Principal dataset on which we might see a drift (ex. deployment data). It can be just one
+            sample (for sudden drifts) or stream of samples (for gradual drifts)
+        
+        sample_dict: dict
+            Dictionary with samples for reference and comparison data (or streams of comparison data)
 
         test: str
             Here, we specify the kind of drift detection test we want (KS, KLD, JSD, MMD, LSDD).
@@ -117,9 +95,11 @@ class embedding:
         a dictionary containing the embeddings as decided by the choice of embedding model and 
         drift detection test type
         """
+
         self.data_ref = data_ref
         self.data_h0  = data_h0
         self.data_h1  = data_h1
+        self.sample_dict = sample_dict
         self.test = test
         self.sample_size = sample_size
         self.windows = windows
@@ -138,12 +118,15 @@ class embedding:
         a dictionary containing the embeddings as decided by the choice of embedding model and 
         drift detection test type
         """
-
-        sample = samplingData(self.data_ref, self.data_h0, self.data_h1, 
-                               self.drift_type, self.sample_size, self.windows)
-        sample_dict = sample.samples()
+        if self.sample_dict is None:
+            sample = samplingData(self.data_ref, self.data_h0, self.data_h1, 
+                                self.drift_type, self.sample_size, self.windows)
+            sample_dict = sample.samples()
+            data_ref = sample_dict[0]
+        data_ref = self.data_ref
+        
         # need to look into what sort of data to inlude in tagged documents (for now just the first X text pieces)
-        bases = baseModels(data = self.data_ref[:self.sample_size], sample_size = self.sample_size, SBERT_model = self.SBERT_model)
+        bases = baseModels(data = data_ref[:self.sample_size], sample_size = self.sample_size, SBERT_model = self.SBERT_model)
         emb_dict = {}
 
         if self.embedding_model == "Doc2Vec":

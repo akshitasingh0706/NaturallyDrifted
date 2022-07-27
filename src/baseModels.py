@@ -14,6 +14,14 @@ class baseModels:
         self.sample_size = sample_size
         self.SBERT_model = SBERT_model
 
+        """
+        This class sets the stage for the embedding models we choose to work with later
+
+        Returns
+        ----------
+        A callable model
+        """
+
     def doc2vec_base(self, 
                     # documents,
                     vector_size: Optional[int] = 100,

@@ -15,22 +15,27 @@ from alibi_detect.cd.tensorflow import preprocess_drift
 
 from sampling import samplingData
 
-class AlibiDetectors:
+class alibiDetectors:
     def __init__(self, 
-                data_ref: Optional[Union[np.ndarray, list, None]],
-                data_h0: Optional[Union[np.ndarray, list, None]],
-                data_h1: Union[np.ndarray, list], # "data" in sample_data_gradual
-                test: Union["MMDDrift", "LSDDDrift", "LearnedKernel"],
-                sample_size: int, 
-                windows: Optional[int],
-                drift_type: Optional[Union["Sudden", "Gradual"]],
-                SBERT_model: str,   
+                data_ref: Optional[Union[np.ndarray, list, None]] = None,
+                data_h0: Optional[Union[np.ndarray, list, None]] = None,
+                data_h1: Optional[Union[np.ndarray, list]] = None, # "data" in sample_data_gradual
+                sample_dict: Optional[Dict] = None,
+                test: Union["MMDDrift", "LSDDDrift", "LearnedKernel"] = "MMDDrift",
+                sample_size: int = 500, 
+                windows: Optional[int] = 10,
+                drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
+                SBERT_model: str = 'bert-base-uncased',   
+                transformation: Union["PCA", "SVD", "UMAP", "UAE", None] = None,
+                pval_thresh: int = .05,
+                dist_thresh: int = .0009,
+
                  
-                emb_type: Optional[Union['pooler_output', 'last_hidden_state', 'hidden_state', 'hidden_state_cls']],
-                n_layers: Optional[int],
-                max_len: Optional[int],
-                enc_dim: Optional[int],
-                batch_size: Optional[int],
+                emb_type: Optional[Union['pooler_output', 'last_hidden_state', 'hidden_state', 'hidden_state_cls']] = 'hidden_state',
+                n_layers: Optional[int] = 9,
+                max_len: Optional[int] = 200,
+                enc_dim: Optional[int] = 32,
+                batch_size: Optional[int] = 32,
                 tokenizer_size: Optional[int] = 3 # keep it small else computer breaks down 
                  ):
         """
@@ -42,43 +47,20 @@ class AlibiDetectors:
         Args
         ----------
         data_ref : np.ndarray, list
-            This is the dataset on which is used as the reference/baseline when detecting drifts. 
-            For instance, if our test of choice is KL Divergence, then we will declare a possible
-            drift based on whether any other data is close in distribution to data_ref. 
-            Generally, the goal is to have all future datasets be as close (in embeddings, distributions)
-            to data_ref, which is how we conclude that there is no drift in the dataset.  
-            
-            data_ref is typically sampled from the "training data". During real world application, 
-            this is the data on which the test will be modeled on because this would generally be 
-            the only data the user would have access to at that point of time. 
+            Dataset on which model is trained (ex: training dataset). We compare a drift with a
+            reference to this distribution.
 
         data_h0 :  np.ndarray, list (optional)
-            This is generally the same dataset as data_ref (or a stream that comes soon after).
+            Generally, the same dataset as data_ref (or a stream that comes soon after).
             We use the lack of drift in data_h0 (with data_ref as our reference) as the necessary 
-            condition to decide the robustness of the drift detection method. If the method ends up 
-            detecting a drift in data_h0 itself, we know it is most likely not doing a good job. 
-            This is because both data_ref and data_h0 are expected to be coming from the same source 
-            and hence should result in similar embeddings and distributions. 
-
-            If the user is confident in the efficacy of their drift detection method, then it would be 
-            worthwhile to consider change the size of data_ref and data_h0 and then re-evaluate detector
-            performance, before proceeding to data_h1. 
+            condition to decide the robustness of the drift detection method. 
 
         data_h1: np.ndarray, list
-            This is the primary dataset on which we can expect to possibly detect a drift. In the real 
-            world, this would usually be the dataset we get post model deployment. To test detectors, a
-            convenient (but not necessarily the best) practice is to take the test data and use that as
-            our proxy for the deployed dataset. 
-
-            Multiple research papers and libraries tend to also use "perturbed" data for their choice of
-            data_h1. Perturbations can include corruptions in images (vision data) or introduction of 
-            unneccessary words and phrases (text data). This is generally the first step in testing the 
-            efficacy of a drift detection method. Once again, if the detectors fails to detect a drift
-            on manually perturbed data, then its quite likely it will not be able to detect drifts in 
-            the real, deployed data as well. 
-
-            Therefore, for our purposes, we have tried to minimize the use of artifically perturbed data
-            and instead rely on test data/data from far away time periods as our data_h1 source. 
+            Principal dataset on which we might see a drift (ex. deployment data). It can be just one
+            sample (for sudden drifts) or stream of samples (for gradual drifts)
+        
+        sample_dict: dict
+            Dictionary with samples for reference and comparison data (or streams of comparison data)
 
         test: str
             Here, we specify the kind of drift detection test we want (KS, KLD, JSD, MMD, LSDD).
@@ -114,11 +96,15 @@ class AlibiDetectors:
         self.data_ref = data_ref
         self.data_h0  = data_h0
         self.data_h1  = data_h1
+        self.sample_dict = sample_dict
         self.test = test
         self.sample_size = sample_size
         self.windows = windows
         self.drift_type = drift_type
         self.SBERT_model = SBERT_model
+        self.transformation = transformation
+        self.pval_thresh = pval_thresh
+        self.dist_thresh = dist_thresh
 
         self.emb_type = emb_type
         self.n_layers = n_layers
@@ -128,23 +114,35 @@ class AlibiDetectors:
         self.tokenizer = AutoTokenizer.from_pretrained(SBERT_model)
         self.batch_size = batch_size
 
+    def sampleData(self):
+        if self.sample_dict is None:
+            sample = samplingData(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
+                                drift_type = self.drift_type, sample_size = self.sample_size, windows = self.windows)
+            return sample.samples()
+        else:
+            return self.sample_dict
+
     def preprocess(self):
+        sample_dict = self.sampleData()
+        data_ref = sample_dict[0]
+
         layers = [-_ for _ in range(1, self.n_layers + 1)]
 
         embedding = TransformerEmbedding(self.SBERT_model, self.emb_type, layers)
-        tokens = self.tokenizer(list(self.data_ref[:self.tokenizer_size]), pad_to_max_length=True, 
+        tokens = self.tokenizer(list(data_ref[:self.tokenizer_size]), pad_to_max_length=True, 
                                 max_length= self.max_len, return_tensors='tf')
         x_emb = embedding(tokens)
         shape = (x_emb.shape[1],)
         uae = UAE(input_layer=embedding, shape=shape, enc_dim= self.enc_dim)
         return uae
-
+    
     def detector(self):
-        sample = samplingData(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
-                               drift_type = self.drift_type, sample_size = self.sample_size, windows = self.windows)
-        sample_dict = sample.samples()
-        data_ref = sample_dict[0]
-
+        if self.sample_dict:
+            data_ref = self.sample_dict[0]
+        else:
+            sample_dict = self.sampleData()
+            data_ref = sample_dict[0]
+        
         uae = self.preprocess()
         preprocess_fn = partial(preprocess_drift, model= uae, tokenizer= self.tokenizer, 
                         max_len= self.max_len, batch_size= self.batch_size)
@@ -157,17 +155,17 @@ class AlibiDetectors:
         elif self.test == "LearnedKernel":
             pass
         else:
-            print("The following is not ")
+            print("The following detector is not included in the package yet")
         return cd 
     
-    def predict(self):
+    def run(self):
         labels = ['No!', 'Yes!']
         cd = self.detector()
-  
-        sample = samplingData(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
-                               drift_type = self.drift_type, sample_size = self.sample_size, windows = self.windows)
-        sample_dict = sample.samples()
 
+        sample_dict = self.sampleData()
+        
+        pvalues = []
+        distances = []
         if self.drift_type == "Sudden":  
             for i, data_name in enumerate(["X_h0", "X_comp"]):
                 data = sample_dict[i+1]
@@ -175,15 +173,23 @@ class AlibiDetectors:
                 preds = cd.predict(data)
                 print('Drift? {}'.format(labels[preds['data']['is_drift']]))
                 print('p-value: {}'.format(preds['data']['p_val']))
+                pvalues.append(preds['data']['p_val'])
+                distances.append(preds['data']['distance'])
 
         elif self.drift_type == "Gradual":
-            if type(self.windows) is not int:
-                print("Please fill/correct windows parameter")
-            for ww in range(1,self.windows):
+            for ww in range(1,len(sample_dict)):
                 data = sample_dict[ww]
                 print("Drift results for window: ", ww, "data using", self.test, "test:")
                 preds = cd.predict(data)
                 print('Drift? {}'.format(labels[preds['data']['is_drift']]))
                 print('p-value: {}'.format(preds['data']['p_val']))
+                pvalues.append(preds['data']['p_val'])
+                distances.append(preds['data']['distance'])
         else:
             print("The following drift type is not included")
+
+        test_stats = {}
+        test_stats['pvalues'] = pvalues
+        test_stats['distances'] = distances
+
+        return test_stats
