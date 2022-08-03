@@ -29,7 +29,7 @@ class allDetectors:
                 data_h0: Optional[Union[np.ndarray, list, None]] = None,
                 data_h1: Optional[Union[np.ndarray, list]] = None, # "data" in sample_data_gradual
                 sample_dict: Optional[Dict] = None,
-                test: Union["KS", "KL", "JS", "MMDDrift", "LSDDDrift", "LearnedKernel"] = "MMDDrift",
+                test: Union["KS", "KL", "JS", "MMD", "LSDD", "LearnedKernel"] = "MMD",
                 pval_thresh = .05,
                 dist_thresh: int = .0009,
 

@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import os
 import tensorflow as tf
+import matplotlib.pyplot as plt
 from transformers import AutoTokenizer
 from functools import partial
 
@@ -21,7 +22,7 @@ class alibiDetectors:
                 data_h0: Optional[Union[np.ndarray, list, None]] = None,
                 data_h1: Optional[Union[np.ndarray, list]] = None, # "data" in sample_data_gradual
                 sample_dict: Optional[Dict] = None,
-                test: Union["MMDDrift", "LSDDDrift", "LearnedKernel"] = "MMDDrift",
+                test: Union["MMD", "LSDD", "LearnedKernel"] = "MMD",
                 sample_size: int = 500, 
                 windows: Optional[int] = 10,
                 drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
@@ -29,6 +30,7 @@ class alibiDetectors:
                 transformation: Union["PCA", "SVD", "UMAP", "UAE", None] = None,
                 pval_thresh: int = .05,
                 dist_thresh: int = .0009,
+                plot: bool = True,
 
                  
                 emb_type: Optional[Union['pooler_output', 'last_hidden_state', 'hidden_state', 'hidden_state_cls']] = 'hidden_state',
@@ -105,6 +107,7 @@ class alibiDetectors:
         self.transformation = transformation
         self.pval_thresh = pval_thresh
         self.dist_thresh = dist_thresh
+        self.plot = plot
 
         self.emb_type = emb_type
         self.n_layers = n_layers
@@ -146,10 +149,10 @@ class alibiDetectors:
         uae = self.preprocess()
         preprocess_fn = partial(preprocess_drift, model= uae, tokenizer= self.tokenizer, 
                         max_len= self.max_len, batch_size= self.batch_size)
-        if self.test == "MMDDrift": 
+        if self.test == "MMD": 
             cd = MMDDrift(data_ref, p_val=.05, preprocess_fn=preprocess_fn, 
                       n_permutations=100, input_shape=(self.max_len,))
-        elif self.test == "LSDDDrift":
+        elif self.test == "LSDD":
             cd = LSDDDrift(data_ref, p_val=.05, preprocess_fn=preprocess_fn, 
                       n_permutations=100, input_shape=(self.max_len,))
         elif self.test == "LearnedKernel":
@@ -157,7 +160,7 @@ class alibiDetectors:
         else:
             print("The following detector is not included in the package yet")
         return cd 
-    
+
     def run(self):
         labels = ['No!', 'Yes!']
         cd = self.detector()
@@ -185,11 +188,28 @@ class alibiDetectors:
                 print('p-value: {}'.format(preds['data']['p_val']))
                 pvalues.append(preds['data']['p_val'])
                 distances.append(preds['data']['distance'])
+            
+            if self.plot:
+                plt.plot(pvalues)
+                plt.title("P-Values for Non-Calibrated Gradual Data broken by Time-Windows")
+                plt.xlabel("Time Windows")
+                plt.xlabel("P-values")                
+                plt.show()
+                plt.plot(distances)
+                plt.title("Distances for Non-Calibrated Gradual Data broken by Time-Windows")
+                plt.xlabel("Time Windows")
+                plt.xlabel("Distances") 
+                plt.show()
+
         else:
             print("The following drift type is not included")
 
         test_stats = {}
         test_stats['pvalues'] = pvalues
         test_stats['distances'] = distances
+
+
+            
+
 
         return test_stats
