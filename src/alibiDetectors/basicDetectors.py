@@ -1,12 +1,16 @@
+'''
+sudden and (basic) gradual drifts on text data from the following detectors - MMD and LSDD
+'''
+
 from typing import Callable, Dict, Optional, Union
 import nlp
 import pandas as pd
 import numpy as np
 import os
 import tensorflow as tf
-import matplotlib.pyplot as plt
 from transformers import AutoTokenizer
 from functools import partial
+import matplotlib.pyplot as plt
 
 from alibi_detect.cd import KSDrift, MMDDrift, LearnedKernelDrift, ClassifierDrift, LSDDDrift
 from alibi_detect.utils.saving import save_detector, load_detector
@@ -16,21 +20,22 @@ from alibi_detect.cd.tensorflow import preprocess_drift
 
 from sampling import samplingData
 
-class alibiDetectors:
+class basicDetectors:
     def __init__(self, 
                 data_ref: Optional[Union[np.ndarray, list, None]] = None,
                 data_h0: Optional[Union[np.ndarray, list, None]] = None,
                 data_h1: Optional[Union[np.ndarray, list]] = None, # "data" in sample_data_gradual
                 sample_dict: Optional[Dict] = None,
-                test: Union["MMD", "LSDD", "LearnedKernel"] = "MMD",
+
+                
+                test: Union["MMD", "LSDD"] = "MMD",
                 sample_size: int = 500, 
                 windows: Optional[int] = 10,
                 drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
                 SBERT_model: str = 'bert-base-uncased',   
-                transformation: Union["PCA", "SVD", "UMAP", "UAE", None] = None,
+                transformation: Union["UMAP", "UAE", None] = None,
                 pval_thresh: int = .05,
                 dist_thresh: int = .0009,
-                plot: bool = True,
 
                  
                 emb_type: Optional[Union['pooler_output', 'last_hidden_state', 'hidden_state', 'hidden_state_cls']] = 'hidden_state',
@@ -107,7 +112,6 @@ class alibiDetectors:
         self.transformation = transformation
         self.pval_thresh = pval_thresh
         self.dist_thresh = dist_thresh
-        self.plot = plot
 
         self.emb_type = emb_type
         self.n_layers = n_layers
@@ -160,7 +164,7 @@ class alibiDetectors:
         else:
             print("The following detector is not included in the package yet")
         return cd 
-
+    
     def run(self):
         labels = ['No!', 'Yes!']
         cd = self.detector()
@@ -188,7 +192,7 @@ class alibiDetectors:
                 print('p-value: {}'.format(preds['data']['p_val']))
                 pvalues.append(preds['data']['p_val'])
                 distances.append(preds['data']['distance'])
-            
+
             if self.plot:
                 plt.plot(pvalues)
                 plt.title("P-Values for Non-Calibrated Gradual Data broken by Time-Windows")
@@ -207,9 +211,5 @@ class alibiDetectors:
         test_stats = {}
         test_stats['pvalues'] = pvalues
         test_stats['distances'] = distances
-
-
-            
-
 
         return test_stats

@@ -17,11 +17,9 @@ from alibi_detect.cd.tensorflow import UAE
 from alibi_detect.cd.tensorflow import preprocess_drift
 
 from sampling import samplingData
-from baseModels import baseModels
-from embedding import embedding
-from distributions import distributions
-from myDetectors import myDetectors
-from alibiDetectors import alibiDetectors
+from basicDetectors import basicDetectors
+from onlineDetectors import onlineDetectors
+from contextDetectors import contextDetectors
 
 class allDetectors:
     def __init__(self, 
@@ -29,9 +27,9 @@ class allDetectors:
                 data_h0: Optional[Union[np.ndarray, list, None]] = None,
                 data_h1: Optional[Union[np.ndarray, list]] = None, # "data" in sample_data_gradual
                 sample_dict: Optional[Dict] = None,
-                test: Union["KS", "KL", "JS", "MMD", "LSDD", "LearnedKernel"] = "MMD",
+                test: Union["MMD", "LSDD", "LearnedKernel"] = "MMD",
                 pval_thresh = .05,
-                dist_thresh: int = .0009,
+                dist_thresh: int = .0009,              
 
                 emb_type: Optional[Union['pooler_output', 'last_hidden_state', 'hidden_state', 'hidden_state_cls']] = 'hidden_state',
                 n_layers: Optional[int] = 9,
@@ -41,12 +39,18 @@ class allDetectors:
                 tokenizer_size: Optional[int] = 3, # keep it small else computer breaks down             
                 
                 sample_size: int = 500, 
-                iterations: int = 20,
                 windows: Optional[int] = 20,
                 drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
-                embedding_model: Union["Doc2Vec", "SBERT", "USE"] = "Doc2Vec",
+                embedding_model: Union["SBERT", "USE"] = "SBERT",
                 SBERT_model: Optional[Union[str, None]] = None, 
-                transformation: Union["PCA", "SVD", "UMAP", None] = None,
+                transformation: Union["UMAP", None] = None,
+
+                ert: int = 50,
+                window_size: int = 10,
+                n_runs: int = 100,
+                n_bootraps: Optional[int]= 2500,
+                context_type: str = "subpopulation",
+                plot: bool = True
                 ):
         """
         This class returns the final detection results based on the embeddings or distributions it
@@ -131,7 +135,13 @@ class allDetectors:
         self.transformation = transformation
         self.pval_thresh = pval_thresh
         self.dist_thresh = dist_thresh
-        self.iterations = iterations
+        self.ert = ert
+        self.window_size = window_size
+        self.n_runs = n_runs 
+        self.n_bootraps = n_bootraps
+        self.context_type = context_type
+        self.plot = plot
+        
 
         self.emb_type = emb_type
         self.n_layers = n_layers
@@ -142,23 +152,22 @@ class allDetectors:
         self.batch_size = batch_size
     
     def run(self):
-        if self.test in ['KL', 'JS', 'KS']:
-            myDets = myDetectors(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
-                sample_dict = self.sample_dict, test = self.test, 
-                sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
-                embedding_model = self.embedding_model, SBERT_model = self.SBERT_model, 
-                transformation = self.transformation, iterations = self.iterations,
-                pval_thresh = self.pval_thresh, dist_thresh = self.dist_thresh)
-            myDets.run()
-        else:
-            alibiDets = alibiDetectors(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
+        if self.test in ["MMD", "LSDD"] and self.drift_type in ['Sudden', 'Gradual']:
+            basicDet = basicDetectors(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
                 sample_dict = self.sample_dict, test = self.test, sample_size = self.sample_size, 
                 drift_type = self.drift_type, SBERT_model = self.SBERT_model, 
                 transformation = self.transformation, windows = self.windows,
                 emb_type = self.emb_type, n_layers = self.n_layers, max_len = self.max_len, 
                 enc_dim = self.enc_dim, batch_size = self.batch_size, tokenizer_size = self.tokenizer_size,
                 pval_thresh = self.pval_thresh, dist_thresh = self.dist_thresh)
-            alibiDets.run()
-    
+            basicDet.run()
+        elif self.test in ["MMD", "LSDD"] and self.drift_type == "Online":
+            onlineDet = onlineDetectors(FINISH THIS)
+            onlineDet.run()
+        elif self.test in ["MMD", "LSDD"] and self.context_type is not None:
+            contextDet = contextDetectors(FINISH THIS)
+            contextDet.run()
+        else:
+            print("Please look into the test or drift type")
 
 

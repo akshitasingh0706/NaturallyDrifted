@@ -1,14 +1,17 @@
+'''
+online (calibrated gradual) drifts on text data from the following detectors - MMD and LSDD
+'''
+
 from typing import Callable, Dict, Optional, Union
 import nlp
 import pandas as pd
 import numpy as np
 import os
 import tensorflow as tf
-import matplotlib.pyplot as plt
 from transformers import AutoTokenizer
 from functools import partial
 
-from alibi_detect.cd import KSDrift, MMDDrift, LearnedKernelDrift, ClassifierDrift, LSDDDrift
+from alibi_detect.cd import MMDDriftOnline, LSDDDriftOnline
 from alibi_detect.utils.saving import save_detector, load_detector
 from alibi_detect.models.tensorflow import TransformerEmbedding
 from alibi_detect.cd.tensorflow import UAE
@@ -16,22 +19,24 @@ from alibi_detect.cd.tensorflow import preprocess_drift
 
 from sampling import samplingData
 
-class alibiDetectors:
+class onlineDetectors:
     def __init__(self, 
                 data_ref: Optional[Union[np.ndarray, list, None]] = None,
                 data_h0: Optional[Union[np.ndarray, list, None]] = None,
                 data_h1: Optional[Union[np.ndarray, list]] = None, # "data" in sample_data_gradual
                 sample_dict: Optional[Dict] = None,
-                test: Union["MMD", "LSDD", "LearnedKernel"] = "MMD",
-                sample_size: int = 500, 
-                windows: Optional[int] = 10,
-                drift_type: Optional[Union["Sudden", "Gradual"]] = "Sudden",
-                SBERT_model: str = 'bert-base-uncased',   
-                transformation: Union["PCA", "SVD", "UMAP", "UAE", None] = None,
-                pval_thresh: int = .05,
-                dist_thresh: int = .0009,
-                plot: bool = True,
 
+                
+                test: Union["MMD", "LSDD"] = "MMD",
+                sample_size: int = 500, 
+                drift_type: str = "Online",
+                SBERT_model: str = 'bert-base-uncased',   
+                transformation: Union["UMAP", "UAE", None] = None,
+                ert: int = 50,
+                window_size: int = 10,
+                n_runs: int = 100,
+                n_bootraps: Optional[int]= 2500,
+                plot: bool = True,
                  
                 emb_type: Optional[Union['pooler_output', 'last_hidden_state', 'hidden_state', 'hidden_state_cls']] = 'hidden_state',
                 n_layers: Optional[int] = 9,
@@ -78,16 +83,15 @@ class alibiDetectors:
             the drift type we are looking for, based on the time/frquency. drift_type asks us 
             to specify whether we want to detect sudden drifts or more gradual drifts. 
 
-        windows: int (optional)
-            This decided the number of segments we would like to break the data into. 
-            This parameter is only required for gradual/incremental drift detection. 
-            For instance, if data_h1 has 100K data points, and if we wish to detect drifts
-            gradually over time, a proxy approach would be to break the data in sets of 5K points
-            and then randomly sample from each set separately. 
-        
         SBERT_model: str
             This parameter is specific to the SBERT embedding models. If we choose to work with SBERT,
-            we can specify the type of SBERT embedding out here. Ex. 'bert-base-uncased'  
+            we can specify the type of SBERT embedding out here. Ex. 'bert-base-uncased' 
+
+        ert: int
+            Expected Run Time before we detect any change
+
+        window_size: int 
+            Size of a window 
 
         Returns
         ----------  
@@ -101,12 +105,13 @@ class alibiDetectors:
         self.sample_dict = sample_dict
         self.test = test
         self.sample_size = sample_size
-        self.windows = windows
         self.drift_type = drift_type
         self.SBERT_model = SBERT_model
         self.transformation = transformation
-        self.pval_thresh = pval_thresh
-        self.dist_thresh = dist_thresh
+        self.ert = ert
+        self.window_size = window_size
+        self.n_runs = n_runs 
+        self.n_bootraps = n_bootraps
         self.plot = plot
 
         self.emb_type = emb_type
@@ -150,66 +155,58 @@ class alibiDetectors:
         preprocess_fn = partial(preprocess_drift, model= uae, tokenizer= self.tokenizer, 
                         max_len= self.max_len, batch_size= self.batch_size)
         if self.test == "MMD": 
-            cd = MMDDrift(data_ref, p_val=.05, preprocess_fn=preprocess_fn, 
-                      n_permutations=100, input_shape=(self.max_len,))
+            cd = MMDDriftOnline(data_ref, ert = self.ert, window_size = self.window_size, 
+                        p_val=.05, preprocess_fn=preprocess_fn, n_bootstrap = self.n_bootraps,
+                        n_permutations=100, input_shape=(self.max_len,))
         elif self.test == "LSDD":
-            cd = LSDDDrift(data_ref, p_val=.05, preprocess_fn=preprocess_fn, 
-                      n_permutations=100, input_shape=(self.max_len,))
+            cd = LSDDDriftOnline(data_ref, ert = self.ert, window_size = self.window_size, 
+                        p_val=.05, preprocess_fn=preprocess_fn, n_bootstrap = self.n_bootraps,
+                        n_permutations=100, input_shape=(self.max_len,))
         elif self.test == "LearnedKernel":
             pass
         else:
             print("The following detector is not included in the package yet")
         return cd 
-
+    
     def run(self):
-        labels = ['No!', 'Yes!']
+        if self.sample_dict:
+            data_h0 = self.sample_dict[1]
+            data_h1 = self.sample_dict[2]
+        else:
+            sample_dict = self.sampleData()
+            data_h0 = self.sample_dict[1]
+            data_h1 = sample_dict[2]
+        
         cd = self.detector()
 
-        sample_dict = self.sampleData()
-        
-        pvalues = []
-        distances = []
-        if self.drift_type == "Sudden":  
-            for i, data_name in enumerate(["X_h0", "X_comp"]):
-                data = sample_dict[i+1]
-                print("Drift results for ", data_name ,"data using ", self.test, "test:")
-                preds = cd.predict(data)
-                print('Drift? {}'.format(labels[preds['data']['is_drift']]))
-                print('p-value: {}'.format(preds['data']['p_val']))
-                pvalues.append(preds['data']['p_val'])
-                distances.append(preds['data']['distance'])
+        times_h0 = []
+        times_h1 = []
+        for _ in range(self.n_runs):
+            n_h0 = len(data_h0)
+            perm_h0 = np.random.permutation(n_h0)
+            time_elapsed = 0
+            cd.reset()
+            while True:
+                pred = cd.predict(data_h1[perm_h0[time_elapsed%n_h0]])
+                if pred['data']['is_drift'] == 1:
+                    times_h0.append(time_elapsed) 
+                else:
+                    time_elapsed += 1 
 
-        elif self.drift_type == "Gradual":
-            for ww in range(1,len(sample_dict)):
-                data = sample_dict[ww]
-                print("Drift results for window: ", ww, "data using", self.test, "test:")
-                preds = cd.predict(data)
-                print('Drift? {}'.format(labels[preds['data']['is_drift']]))
-                print('p-value: {}'.format(preds['data']['p_val']))
-                pvalues.append(preds['data']['p_val'])
-                distances.append(preds['data']['distance'])
+        for _ in range(self.n_runs):
+            n_h1 = len(data_h1)
+            perm_h1 = np.random.permutation(n_h1)
+            time_elapsed = 0
+            cd.reset()
+            while True:
+                pred = cd.predict(data_h1[perm_h1[time_elapsed%n_h1]])
+                if pred['data']['is_drift'] == 1:
+                    times_h1.append(time_elapsed) 
+                else:
+                    time_elapsed += 1 
             
-            if self.plot:
-                plt.plot(pvalues)
-                plt.title("P-Values for Non-Calibrated Gradual Data broken by Time-Windows")
-                plt.xlabel("Time Windows")
-                plt.xlabel("P-values")                
-                plt.show()
-                plt.plot(distances)
-                plt.title("Distances for Non-Calibrated Gradual Data broken by Time-Windows")
-                plt.xlabel("Time Windows")
-                plt.xlabel("Distances") 
-                plt.show()
-
-        else:
-            print("The following drift type is not included")
-
-        test_stats = {}
-        test_stats['pvalues'] = pvalues
-        test_stats['distances'] = distances
-
-
-            
-
-
-        return test_stats
+        times_dict = {}
+        times_dict[0] = times_h0   
+        times_dict[1] = times_h1   
+        return times_dict    
+    
