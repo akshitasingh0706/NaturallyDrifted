@@ -1,10 +1,10 @@
 from typing import Dict, Optional, Union
 import numpy as np
 from transformers import AutoTokenizer
+import torch
 
 class detectorParent:
     def __init__(self,
-                # filler, # required for some reason - don't know why 
                 # data specifications
                 data_ref: Optional[Union[np.ndarray, list, None]] = None,
                 data_h0: Optional[Union[np.ndarray, list, None]] = None,
@@ -30,7 +30,16 @@ class detectorParent:
                 max_len: Optional[int] = 200,
                 enc_dim: Optional[int] = 32,
                 batch_size: Optional[int] = 32,
-                tokenizer_size: Optional[int] = 3 # keep it small else computer breaks down 
+                tokenizer_size: Optional[int] = 3, # keep it small else computer breaks down 
+
+                # online detector related specifications
+                ert: Optional[int] = 50, 
+                window_size: Optional[int] = 10, 
+                n_runs: Optional[int] = 3, 
+                n_bootstraps: Optional[int]= 250,
+
+                # context detector related specifications
+                context: Optional[str] = 'subpopulation', 
                  ):
         """
         Define base arguments/parameters required by all Text related Alibi detectors. 
@@ -78,6 +87,20 @@ class detectorParent:
             This parameter is specific to the SBERT embedding models. If we choose to work with SBERT,
             we can specify the type of SBERT embedding out here. Ex. 'bert-base-uncased'  
 
+        ert: int
+        Expected Run Time before a drift is detected
+        
+        window_size: int
+
+        n_run: int
+
+        n_bootstraps: int
+
+        context_type: str
+            Context that we wish to ignore
+            1) sub-population: if we wish to ignore the relative change in sub-population of certain 
+            classes
+
         Returns
         ----------  
         Nothing
@@ -103,6 +126,15 @@ class detectorParent:
         self.enc_dim = enc_dim
         self.tokenizer_size = tokenizer_size
         self.tokenizer = AutoTokenizer.from_pretrained(SBERT_model)
-        self.batch_size = batch_size       
+        self.batch_size = batch_size   
+
+        self.ert = ert
+        self.window_size = window_size
+        self.n_runs = n_runs 
+        self.n_bootstraps = n_bootstraps
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        self.context = context
+
 
 

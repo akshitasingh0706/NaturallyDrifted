@@ -5,7 +5,7 @@ from base import detectorParent
 
 class samplingData(detectorParent):
     def __init__(self, *args, **kwargs):
-        detectorParent.__init__(self, *args, **kwargs)
+        super(samplingData, self).__init__(*args, **kwargs)
 
     def random_sample(self, data: Union[np.ndarray, list]):
         return np.random.choice(data, self.sample_size)

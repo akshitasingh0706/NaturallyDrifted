@@ -22,36 +22,16 @@ from alibi_detect.cd.tensorflow import preprocess_drift
 
 from sampling import samplingData
 from base import detectorParent
-
 class onlineDetectors(samplingData, detectorParent):
-    def __init__(self, 
-                ert: int = 50, window_size: int = 10, n_runs: int = 3, n_bootstraps: Optional[int]= 250,
-                *args, **kwargs):           
-        detectorParent.__init__(self, *args, **kwargs)
-        samplingData.__init__(self, *args, **kwargs)
+    def __init__(self, *args, **kwargs):           
+        super(onlineDetectors, self).__init__(*args, **kwargs)
         """
         [description]
-
-        Args
-        ----------
-        ert: int
-        Expected Run Time before a drift is detected
-        
-        window_size: int
-
-        n_run: int
-
-        n_bootstraps: int
 
         Returns
         ----------  
         [finish]
         """
-        self.ert = ert
-        self.window_size = window_size
-        self.n_runs = n_runs 
-        self.n_bootstraps = n_bootstraps
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def sampleData(self):
         if self.sample_dict is None:

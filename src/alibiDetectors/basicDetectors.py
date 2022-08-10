@@ -23,8 +23,7 @@ from base import detectorParent
 
 class basicDetectors(samplingData, detectorParent):
     def __init__(self, *args, **kwargs):
-        detectorParent.__init__(self, *args, **kwargs)
-        samplingData.__init__(self, *args, **kwargs)
+        super(basicDetectors, self).__init__(*args, **kwargs)
         """
         [description]
 

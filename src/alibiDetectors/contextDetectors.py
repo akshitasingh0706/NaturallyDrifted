@@ -29,24 +29,15 @@ from sampling import samplingData
 from base import detectorParent
 
 class contextDetectors(samplingData, detectorParent):
-    def __init__(self, context_type: str = "sub-populations",  *args, **kwargs):
-        detectorParent.__init__(self, *args, **kwargs)
-        samplingData.__init__(self, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(contextDetectors, self).__init__(*args, **kwargs)
         """
         [description]
-
-        Args
-        ----------
-        context_type: str
-            Context that we wish to ignore
-            1) sub-population: if we wish to ignore the relative change in sub-population of certain 
-            classes
 
         Returns
         ----------  
         [finish]
         """
-        self.context_type = context_type
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def sampleData(self):
