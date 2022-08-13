@@ -23,14 +23,17 @@ from base import detectorParent
 
 class basicDetectors(samplingData, detectorParent):
     def __init__(self, *args, **kwargs):
-        super(basicDetectors, self).__init__(*args, **kwargs)
         """
-        [description]
+        Checks for possible sudden drift in the data. Sudden drifts are drifts we could see right 
+        after deployment. But we can also use sudden drift techniques to try identifying drifts in 
+        a new batch of data (Ex. data being streamed weekly). 
 
         Returns
         ----------  
-        [finish]
+        Lists and plots of relevant test statistics (p-values, distances) given the selected 
+        detector (MMD, LSDD etc)
         """
+        super(basicDetectors, self).__init__(*args, **kwargs)
 
     def sampleData(self):
         if self.sample_dict is None:

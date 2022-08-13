@@ -23,15 +23,16 @@ from alibi_detect.cd.tensorflow import preprocess_drift
 from sampling import samplingData
 from base import detectorParent
 class onlineDetectors(samplingData, detectorParent):
-    def __init__(self, *args, **kwargs):           
-        super(onlineDetectors, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):        
         """
-        [description]
+        Checks for possible drift in the dataset in an online fashion.
 
         Returns
         ----------  
-        [finish]
-        """
+        1) Lists and plots of expected run times (OnlineMMD, OnlineLSDD etc). 
+        2) Plots of  dynamic threshold pitted against the test statistic for that window
+        """   
+        super(onlineDetectors, self).__init__(*args, **kwargs)
 
     def sampleData(self):
         if self.sample_dict is None:

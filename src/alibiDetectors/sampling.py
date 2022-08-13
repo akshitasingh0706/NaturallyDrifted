@@ -5,6 +5,15 @@ from base import detectorParent
 
 class samplingData(detectorParent):
     def __init__(self, *args, **kwargs):
+        """
+        Takes in 3 datasets - the reference set, the h0 set (generally the same as reference set), 
+        and the possibly drifted set and then samples from them based on the kind of drift we are 
+        trying to flag.
+
+        Returns
+        ----------  
+        Numpy array of data samples
+        """
         super(samplingData, self).__init__(*args, **kwargs)
 
     def random_sample(self, data: Union[np.ndarray, list]):

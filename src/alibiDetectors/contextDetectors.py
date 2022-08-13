@@ -30,15 +30,17 @@ from base import detectorParent
 
 class contextDetectors(samplingData, detectorParent):
     def __init__(self, *args, **kwargs):
-        super(contextDetectors, self).__init__(*args, **kwargs)
         """
-        [description]
+        Checks for drifts in data after accounting for any specific drifts (Ex. in specific features)
+        that we already expect (contexts)
 
         Returns
         ----------  
-        [finish]
+        Test statistics
         """
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        super(contextDetectors, self).__init__(*args, **kwargs)
 
     def sampleData(self):
         if self.sample_dict is None:
