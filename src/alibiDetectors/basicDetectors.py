@@ -24,8 +24,9 @@ from base import detectorParent
 class basicDetectors(samplingData, detectorParent):
     def __init__(self, *args, **kwargs):
         """
-        Checks for possible sudden drift in the data. Sudden drifts are drifts we could see right 
-        after deployment. But we can also use sudden drift techniques to try identifying drifts in 
+        In this class, we check for possible sudden drift in the data, using some of Alibi's methods.
+        Sudden drifts are drifts we could see right after deployment. 
+        We can also use sudden drift techniques to try identifying drifts in 
         a new batch of data (Ex. data being streamed weekly). 
 
         Returns
@@ -36,12 +37,29 @@ class basicDetectors(samplingData, detectorParent):
         super(basicDetectors, self).__init__(*args, **kwargs)
 
     def sampleData(self):
+        """
+        Call the samplingData class to construct samples from the input data provided by the user
+
+        Returns
+        ----------  
+        Dictionary with samples for reference and comparison data (or streams of comparison data).
+        """
         if self.sample_dict is None:
             return samplingData.samples(self)
         else:
             return self.sample_dict
 
     def preprocess(self):
+        """
+        Here we process the text data in the following manner:
+        1) Embed it (generally, by using some kind of a Sentence Transformer)
+        2) Prepare a dimension reduction model for it that we can than feed into the main Alibi 
+        detector function
+
+        Returns
+        ----------  
+        A dimesnion reduction/preprocessing model that the Alibi Detector can use (generally, an Untrained Autoencoder)
+        """
         sample_dict = self.sampleData()
         data_ref = sample_dict[0]
 
@@ -56,6 +74,15 @@ class basicDetectors(samplingData, detectorParent):
         return uae
     
     def detector(self):
+        """
+        Here, we call the relevant drift detection method from Alibi Detect, given user input. 
+        The function uses reference samples and preprocessing from the previous function as arguments
+        for the detection model development here. 
+
+        Returns
+        ----------  
+        A trained detection model (MMD, LSDD etc) as specified by the user input
+        """
         if self.sample_dict:
             data_ref = self.sample_dict[0]
         else:
@@ -78,6 +105,14 @@ class basicDetectors(samplingData, detectorParent):
         return cd if self.test in ['MMD', 'LSDD', 'LearnedKernel'] else 0
     
     def run(self):
+        """
+        Here, we run the detection model from the previous function, on the comparison data on 
+        which we want to check for a possible drift. 
+
+        Returns
+        ----------  
+        Lists and plots of relevant test statistics (p-values, distances) given the selected detector (MMD, LSDD etc)
+        """
         labels = ['No!', 'Yes!']
         cd = self.detector()
 

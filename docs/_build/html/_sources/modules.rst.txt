@@ -1,23 +1,15 @@
-alibiDetectors
-======
+Alibi Detectors
+========================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
-   base
-   sampling
-   basicDetectors
-   onlineDetectors
+   alibiModules/modules
 
-featureLevelDetectors
-======
+Feature Level Detectors
+========================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
-   base
-   sampling
-   basicDetectors
-   onlineDetectors
-
-
+   fldModules/modules

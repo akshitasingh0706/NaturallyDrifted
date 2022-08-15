@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>alibiDetectors module &mdash; NaturallyDrifted  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Feature Level Detectors" href="../fldModules/modules.html" />
+    <link rel="prev" title="onlineDetectors module" href="onlineDetectors.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> NaturallyDrifted
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../baseModules/modules.html">Base Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Alibi Detectors</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="basicDetectors.html">basicDetectors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="onlineDetectors.html">onlineDetectors module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">alibiDetectors module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../fldModules/modules.html">Feature Level Detectors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NaturallyDrifted</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">Alibi Detectors</a> &raquo;</li>
+      <li>alibiDetectors module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/alibiModules/alibiDetectors.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-alibiDetectors">
+<span id="alibidetectors-module"></span><h1>alibiDetectors module<a class="headerlink" href="#module-alibiDetectors" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="alibiDetectors.alibiDetectors">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">alibiDetectors.</span></span><span class="sig-name descname"><span class="pre">alibiDetectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#alibiDetectors.alibiDetectors" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../baseModules/base.html#base.detectorParent" title="base.detectorParent"><code class="xref py py-class docutils literal notranslate"><span class="pre">detectorParent</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="alibiDetectors.alibiDetectors.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#alibiDetectors.alibiDetectors.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>This is final wrapper class for all text related Alibi Detectors (basic detectors, online
+detectors, context aware detectors etc.). We can generally just directly call this one function
+and populate all the parameters (datasets, detection tests, drift types etc.) and get our test
+statistics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_ref</strong> (<em>np.ndarray</em><em>, </em><em>list</em>) – Dataset on which the original model is trained (ex: training dataset). We flag a drift
+with a reference to the distribution of this dataset.</p></li>
+<li><p><strong>data_h0</strong> (<em>np.ndarray</em><em>, </em><em>list</em>) – This is an optional dataset that we can use as a sanity check for the efficacy of a drift
+detector. Generally, we use the same dataset as data_ref (or a stream that comes soon after).
+The lack of drift in data_h0 (with data_ref as our reference) is the necessary
+condition to decide the robustness of the drift detection method</p></li>
+<li><p><strong>data_h1</strong> (<em>np.ndarray</em><em>, </em><em>list</em>) – This is the principal dataset on which we might see a drift (ex. deployment data).
+It can be just one sample (for sudden drifts) or stream of samples (for gradual drifts).
+Often, for pipelines, datasets come in batches, and each new batch can then be updated
+to the new data_h1.</p></li>
+<li><p><strong>sample_dict</strong> (<em>dict</em>) – Dictionary with samples for reference and comparison data (or streams of comparison data).
+The user can directly input the dictionary as our dataset source if they would prefer to
+organize the data on their own.</p></li>
+<li><p><strong>sample_size</strong> (<em>int</em>) – This parameter decides the number of samples from each of the above 3 datasets that we would
+like to work with. For instance, if the entire training data is 100K sentences, we can use
+a sample_size = 500 to randomly sample 500 of those sentences.</p></li>
+<li><p><strong>test</strong> (<em>str</em>) – Here, we specify the kind of drift detection test we want (KS, KLD, JSD, MMD, LSDD).
+Each of them is described in greater detail in the README.md.</p></li>
+<li><p><strong>drift_type</strong> (<em>str</em>) – Drifts can vary depending on the time horizan and frequency at which we try to detect
+them. This parameter asks the user to specify the type of drift (“Sudden”, “Gradual”,
+“Online”). The details of each are in README.md</p></li>
+<li><p><strong>plot</strong> (<em>bool</em>) – This parameter asks the user if they wish to see some of the plots of the results
+from the drift detection. Not every detector will result in relevant plot.</p></li>
+<li><p><strong>windows</strong> (<em>int</em>) – This parameter is relevant for gradual drifts and helps break down the data into a
+certain number of buckets. These buckets can act like “batches” or “data streams”.
+The idea behind this approach is that we are trying to localize drifts to a certain
+time frame and check for consistencies (or lack thereof) in detection.
+If data_h1 has 100K data points, and if we wish to detect drifts
+gradually over time, a proxy approach would be to break the data in sets of 5K points
+and then randomly sample from each set separately.</p></li>
+<li><p><strong>SBERT_model</strong> (<em>str</em>) – This parameter is specific to the SBERT embedding models. If we choose to work with SBERT,
+we can specify the type of SBERT embedding out here. Ex. ‘bert-base-uncased’</p></li>
+<li><p><strong>ert</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – Expected Run Time before a drift is detected. Alibi detect uses this approach for it’s
+online drift detectors. If the average ERT for the reference data is significantly higher
+than the average run time for the drifted data, that might indicate a possible drift.</p></li>
+<li><p><strong>window_size</strong> (<em>int</em>) – This parameter is used within Alibi’s online detectors.
+It specifies the number of datapoints to include in one window.</p></li>
+<li><p><strong>n_run</strong> (<em>int</em>) – This parameter is used within Alibi’s online detectors and specifies the number of runs
+the detector must perform before we can get an average ERT.</p></li>
+<li><p><strong>n_bootstraps</strong> (<em>int</em>) – This parameter is used within Alibi’s online detectors</p></li>
+<li><p><strong>context_type</strong> (<em>str</em>) – Context that we wish to ignore
+1) sub-population: if we wish to ignore the relative change in sub-population of certain
+classes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>Lists and plots of relevant test statistics (p-values, distances) given the selected</em></p></li>
+<li><p><em>detector (MMD, LSDD etc) and drift type (Sudden, Gradual, Online)</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="alibiDetectors.alibiDetectors.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#alibiDetectors.alibiDetectors.run" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="onlineDetectors.html" class="btn btn-neutral float-left" title="onlineDetectors module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../fldModules/modules.html" class="btn btn-neutral float-right" title="Feature Level Detectors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Akshita Singh.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

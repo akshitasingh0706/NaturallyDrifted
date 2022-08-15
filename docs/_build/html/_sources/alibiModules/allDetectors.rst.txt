@@ -1,0 +1,7 @@
+allDetectors module
+======================
+
+.. automodule:: allDetectors
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -13,18 +13,85 @@ from embedding import embedding
 from distributions import distributions
 
 class myDetectors(distributions, embedding, samplingData, detectorParent):
-    # def __init__(self, *args, **kwargs):
-    #     detectorParent.__init__(self, *args, **kwargs)
-    #     samplingData.__init__(self, *args, **kwargs)
-    #     """
-    #     This class returns the final detection results based on the embeddings or distributions it
-    #     inherits. Currently, the tests covered in this class are Kolmogorov–Smirnov test, 
-    #     Kullback–Leibler divergence, and Jensen-Shannon Divergence. Each test will return a different 
-    #     output based on the kind of embedding model we choose to work with. 
-        # """
+    def __init__(self, *args, **kwargs):
+        """
+        This class returns the final detection results based on the embeddings or distributions it
+        inherits. Currently, the tests covered in this class are Kolmogorov–Smirnov test, 
+        Kullback–Leibler divergence, and Jensen-Shannon Divergence. Each test will return a different 
+        output based on the kind of embedding model we choose to work with. 
+
+        Args
+        ----------
+        data_ref : np.ndarray, list
+            Dataset on which the original model is trained (ex: training dataset). We flag a drift 
+            with a reference to the distribution of this dataset. 
+
+        data_h0 :  np.ndarray, list 
+            This is an optional dataset that we can use as a sanity check for the efficacy of a drift
+            detector. Generally, we use the same dataset as data_ref (or a stream that comes soon after).
+            The lack of drift in data_h0 (with data_ref as our reference) is the necessary 
+            condition to decide the robustness of the drift detection method
+
+        data_h1: np.ndarray, list
+            This is the principal dataset on which we might see a drift (ex. deployment data). 
+            It can be just one sample (for sudden drifts) or stream of samples (for gradual drifts).
+            Often, for pipelines, datasets come in batches, and each new batch can then be updated
+            to the new data_h1.
+        
+        sample_dict: dict
+            Dictionary with samples for reference and comparison data (or streams of comparison data).
+            The user can directly input the dictionary as our dataset source if they would prefer to 
+            organize the data on their own. 
+
+        sample_size: int
+            This parameter decides the number of samples from each of the above 3 datasets that we would
+            like to work with. For instance, if the entire training data is 100K sentences, we can use
+            a sample_size = 500 to randomly sample 500 of those sentences. 
+        
+        test: str
+            Here, we specify the kind of drift detection test we want (KS, KLD, JSD, MMD, LSDD).
+            Each of them is described in greater detail in the README.md.  
+
+        drift_type: str
+            Drifts can vary depending on the time horizan and frequency at which we try to detect
+            them. This parameter asks the user to specify the type of drift ("Sudden", "Gradual", 
+            "Online"). The details of each are in README.md
+        
+        plot: bool
+            This parameter asks the user if they wish to see some of the plots of the results
+            from the drift detection. Not every detector will result in relevant plot.
+
+        windows: int 
+            This parameter is relevant for gradual drifts and helps break down the data into a 
+            certain number of buckets. These buckets can act like "batches" or "data streams".
+            The idea behind this approach is that we are trying to localize drifts to a certain 
+            time frame and check for consistencies (or lack thereof) in detection. 
+            If data_h1 has 100K data points, and if we wish to detect drifts
+            gradually over time, a proxy approach would be to break the data in sets of 5K points
+            and then randomly sample from each set separately. 
+        
+        SBERT_model: str 
+            This parameter is specific to the SBERT embedding models. If we choose to work with SBERT,
+            we can specify the type of SBERT embedding out here. Ex. 'bert-base-uncased'  
+
+        embedding_model: str
+            This is the principle parameter of this class. It decided the kind of embedding the text 
+            goes through. The embeddings we consider thus far are: 
+            a) SBERT: A Python framework for state-of-the-art sentence, text and image embeddings. 
+            b) Universal Sentence Encoders: USE encodes text into high dimensional vectors that can be 
+            used for text classification, semantic similarity, clustering, and other natural language tasks
+            c) Doc2Vec: a generalization of Word2Vec, which in turn is an algorithm that uses a 
+            neural network model to learn word associations from a large corpus of text
+        
+        Returns
+        ----------
+        Drift detection related test statistics and any relevant plots
+        """
+        super(myDetectors, self).__init__(*args, **kwargs)
+
     def kl_divergence(self, p, q):
         """
-        Calculated the KL Divergence for the 2 distributions p and q
+        Calculated the Kullback–Leibler Divergence for the 2 distributions p and q
 
         Args
         ----------
@@ -41,7 +108,7 @@ class myDetectors(distributions, embedding, samplingData, detectorParent):
 
     def js_divergence(self, p, q):
         """
-        Calculated the JS Divergence for the 2 distributions p and q
+        Calculated the Jensen–Shannon Divergence for the 2 distributions p and q
 
         Args
         ----------
@@ -58,11 +125,11 @@ class myDetectors(distributions, embedding, samplingData, detectorParent):
 
     def ks_doc2vec(self):
         """
-        Calculated KS test for Doc2Vec embeddings
+        Calculated Kolmogorov–Smirnov test for Doc2Vec embeddings
 
         Returns
         ----------    
-        The p-values and distances as given by the KS test    
+        The p-values and distances as given by the Kolmogorov–Smirnov test   
         """
         final_dict = embedding.final_embeddings(self)
         iterations = len(final_dict)
@@ -87,11 +154,11 @@ class myDetectors(distributions, embedding, samplingData, detectorParent):
 
     def ks_sbert(self):
         """
-        Calculated KS test for SBERT embeddings
+        Calculated the Kolmogorov–Smirnov test test for SBERT embeddings. 
 
         Returns
         ----------    
-        The p-values and distances as given by the KS test    
+        The p-values and distances as given by the Kolmogorov–Smirnov test    
         """
         final_dict = embedding.final_embeddings(self) 
         windows = len(final_dict.keys())
@@ -110,7 +177,7 @@ class myDetectors(distributions, embedding, samplingData, detectorParent):
 
     def divergence_doc2vec(self):
         """
-        Calculated KL or JS Divergence for Doc2Vec embeddings
+        Calculated Kullback–Leibler or Jensen–Shannon Divergence for Doc2Vec embeddings
 
         Returns
         ----------    
@@ -150,7 +217,7 @@ class myDetectors(distributions, embedding, samplingData, detectorParent):
 
     def divergence_seneconders(self):
         """
-        Calculated KL or JS Divergence for SBERT/USE embeddings
+        Calculated Kullback–Leibler or Jensen–Shannon Divergence for SBERT/USE embeddings
 
         Returns
         ----------    
@@ -202,13 +269,13 @@ class myDetectors(distributions, embedding, samplingData, detectorParent):
             if self.embedding_model == "Doc2Vec":
                 return self.ks_doc2vec()
             if self.embedding_model in ["SBERT", "USE"]:
-                return self.divergence_seneconders()
+                return self.ks_sbert()
 
         elif self.test == "KL":
             if self.embedding_model == "Doc2Vec":
-                return self.divergence_doc2vec()[0]
+                return self.divergence_doc2vec()['KL_div']
             if self.embedding_model in ["SBERT", "USE"]:
-                return self.divergence_seneconders()[0]
+                return self.divergence_seneconders()['KL_div']
 
         elif self.test == "JS":
             if self.embedding_model == "Doc2Vec":

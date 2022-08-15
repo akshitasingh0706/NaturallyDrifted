@@ -12,8 +12,6 @@ from base import detectorParent
 class distributions(embedding, samplingData, detectorParent):
     # def __init__(self, bandwidth = .05, kernel = 'gaussian', *args, **kwargs):
     def __init__(self, *args, **kwargs):
-        detectorParent.__init__(self, *args, **kwargs)
-        samplingData.__init__(self, *args, **kwargs)
         """
         In this class, we construct distributions out of the embeddings we got from the "embedding" class. 
         This is an optional class and is only required if we are running a distribution dependent test such 
@@ -26,32 +24,37 @@ class distributions(embedding, samplingData, detectorParent):
         """
         # self.bandwidth = bandwidth
         # self.kernel = kernel
+        super(distributions, self).__init__(*args, **kwargs)
 
     def kde(self): # ex. (bandwidth = .05, kernel = 'gaussian')
         return KernelDensity(bandwidth = .05, kernel = 'gaussian')
 
     def distributions_doc2vec(self): 
         """
-        Constructs distributions for Doc2Vec embeddings 
+        Constructs distributions for Doc2Vec embeddings
 
         Returns
         ----------  
-          a dictionary containing the distributions as decided by the choice of embedding model and 
-        drift detection test type
+        A dictionary containing the distributions as decided by the choice of embedding model and drift detection test type
         """  
         kde = self.kde()
+
         # distributions across all iterations
         distributions_across_iters = {}
         for it in range(self.iterations):
-            # if self.emb_dict is None:
-            emb_dict = embedding.final_embeddings(self)
+            embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, test = self.test,
+                            sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
+                            embedding_model = self.embedding_model, SBERT_model = self.SBERT_model, 
+                            transformation = self.transformation, sample_dict = self.sample_dict, 
+                              iterations = self.iterations)
+            emb_dict = embs.final_embeddings()
             '''
             distributions for each data window in 1 iteration
             ex. for sudden drift we will only have 3 distributions - ref, h0, h1
             for gradual drifts, we will have distributions for each time window
             '''
             distributions_per_window = {} # distribution per data window
-            for ww in emb_dict.keys():  # for each data window (keys)
+            for ww in emb_dict.keys():
                 data = np.atleast_2d(emb_dict[ww]).T
                 kde.fit(data)
                 kde_score = kde.score_samples(data)
@@ -61,23 +64,21 @@ class distributions(embedding, samplingData, detectorParent):
 
     def distributions_seneconders(self):
         """
-        Constructs distributions for SBERT or USE embeddings 
-
+        Constructs distributions for Sentence Transformer or Universal Sentence Encoder embeddings 
+        
         Returns
         ----------  
-        a dictionary containing the distributions as decided by the choice of embedding model and 
-        drift dete
+        a dictionary containing the distributions as decided by the choice of embedding model and drift detector
         """
         embs = embedding(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1, 
                         sample_dict = self.sample_dict, test = self.test, 
                         sample_size = self.sample_size, windows = self.windows, drift_type = self.drift_type, 
                         embedding_model = self.embedding_model, SBERT_model = self.SBERT_model, 
-                        transformation = self.transformation)
+                        transformation = self.transformation, iterations = self.iterations)
+        emb_dict = embs.final_embeddings()
         kde = KernelDensity(bandwidth = .05, kernel = 'gaussian')
         distributions_across_iters = {}
         for it in range(self.iterations):
-            # if self.emb_dict is None:
-            emb_dict = embedding.final_embeddings(self)
             distributions_per_window = {}          
             for ww in emb_dict.keys(): # for each data window (keys)
                 dimensions = emb_dict[0].shape[1] # ex. if we chose PCA with n_comp = 25, then dimensions = 25
@@ -101,12 +102,11 @@ class distributions(embedding, samplingData, detectorParent):
     
     def final_distributions(self):
         """
-        Constructs distributions for the selected embeddings 
-
+        Constructs distributions for the selected embeddings (Doc2Vec, SBERT, USE)
+        
         Returns
         ----------  
-        a dictionary containing the distributions as decided by the choice of embedding model and 
-        drift dete
+        A dictionary containing the distributions as decided by the choice of embedding model and drift detector
         """
         if self.embedding_model in ["SBERT", "USE"]:
             return self.distributions_seneconders()

@@ -12,8 +12,6 @@ from sampling import samplingData
 
 class embedding(samplingData, detectorParent):
     def __init__(self, *args, **kwargs):
-        detectorParent.__init__(self, *args, **kwargs)
-        samplingData.__init__(self, *args, **kwargs)
         """
         In this class, we turn the samples of text inputs into text embeddings, which we can then use
         to a) either construct distributions, or b) calculate drift on. There are many different kinds 
@@ -21,11 +19,18 @@ class embedding(samplingData, detectorParent):
         
         Returns
         ----------  
-        a dictionary containing the embeddings as decided by the choice of embedding model and 
-        drift detection test type
+        A dictionary containing the embeddings as decided by the choice of embedding model and drift detection test type
         """
+        super(embedding, self).__init__(*args, **kwargs)
     
     def sampleData(self):
+        """
+        Call the samplingData class to construct samples from the input data provided by the user
+
+        Returns
+        ----------  
+        Dictionary with samples for reference and comparison data (or streams of comparison data).
+        """
         if self.sample_dict is None:
             return samplingData.samples(self)
         else:
@@ -33,12 +38,12 @@ class embedding(samplingData, detectorParent):
    
     def embed_data(self):
         """
-        Embeds text inherited from the sampling class.
+        Embeds text inherited from the sampling class. The type of embedding (Doc2Vec, SBERT etc) is
+        decided by the user
 
         Returns
         ----------  
-        a dictionary containing the embeddings as decided by the choice of embedding model and 
-        drift detection test type
+        A dictionary containing the embeddings as decided by the choice of embedding model and drift detection test type
         """
         sample_dict = self.sampleData()
         data_ref = sample_dict[0]
@@ -66,6 +71,15 @@ class embedding(samplingData, detectorParent):
                   
     # only required for KS Test (which does not get to Distributions which is where we actually do iterations)
     def embed_data_iters(self):
+        """
+        Runs the embedding function "iterations" number of times, if the selected drift detection test
+        is the KS Test. For KL and JS Divergence, the iterations are taken care of in the distributions
+        class
+        
+        Returns
+        ----------  
+        A dictionary containing the embeddings as decided by the choice of embedding model and drift detection test type
+        """
         emb_dict = {}
         for i in range(self.iterations):
             temp_dict = self.embed_data()

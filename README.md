@@ -73,17 +73,36 @@ X2 = X[round(X.shape[0]*.4):] # data_h1
 - Check for Drift Detection. An example for Doc2Vec and KS test is given below
 <pre>
 # define variables/parameters 
-drift_type = "Sudden"
-model_name = None
-embedding_model = "Doc2Vec" 
 sample_size = 500
-test = "JS"
+windows = 10
+
+test = "MMD"
+drift_type = "Online"
+embedding_model = 'SBERT'
+SBERT_model = 'bert-base-uncased'
+
+ert = 50
+n_runs = 20
+window_size = 20
+
 
 # initialize the detector class with the above parameters
-detectors = detectors(data_ref = X1, data_h0 = X1, data_h1 = X2, test = test, drift_type = drift_type,
-                sample_size = sample_size, embedding_model = embedding_model, model_name = model_name)
+detectors = allDetectors(
+                #### Step 1: data/sampling related parameters
+                data_ref = X1, data_h0 = X1, data_h1 = X2, test = test, sample_size = sample_size
+                
+                #### Step 2: text embedding related parameters
+                embedding_model = embedding_model, SBERT_model = SBERT_model
+                
+                #### Step 3: drift detection test and drift type related parameters
+                test = test, drift_type = drift_type
+                
+                #### Step 4: selected drift detector related parameters
+                ert = ert, n_runs = n_runs, window_size = window_size
+                )
+                
 # run the code to get the detector results
-result = detectors.run() # change the term to "run" or "execute"
+result = detectors.run() 
 </pre>
 
 <a name="azure"/>
@@ -116,10 +135,10 @@ pip install -r requirements.txt
 
 <a name="select-data"/>
 
-## Note 1: Selecting data for analyses
+## Step 1: Selecting data for analyses
 To detect drifts, we need to look into the "reference data" as well as the comparison data. A convenient (but not the only) way to divide our data for our analyses is as follows:
-#### data_ref
-(type: np.ndarray, list)
+
+#### data_ref: np.ndarray, list
 - This is the dataset on which is used as the reference/baseline when detecting drifts. For instance, if our test of choice is KL Divergence, then we will declare a possible drift based on whether any other data is close in distribution to data_ref. 
 - Generally, the goal is to have all future datasets be as close (in embeddings, distributions)
 to data_ref, which is how we conclude that there is no drift in the dataset.  
@@ -127,34 +146,25 @@ to data_ref, which is how we conclude that there is no drift in the dataset.
 this is the data on which the test will be modeled on because this would generally be 
 the only data the user would have access to at that point of time. 
 
-#### data_h0
-(type: np.ndarray, list (optional))
+#### data_h0: np.ndarray, list (optional)
 - This is generally the same dataset as data_ref (or a stream that comes soon after). We use the lack of drift in data_h0 (with data_ref as our reference) as the necessary condition to decide the robustness of the drift detection method.
 - If the method ends up detecting a drift in data_h0 itself, we know it is most likely not doing a good job. This is because both data_ref and data_h0 are expected to be coming from the same source and hence should result in similar embeddings and distributions. If the user is confident in the efficacy of their drift detection method, then it would be worthwhile to consider change the size of data_ref and data_h0 and then re-evaluate detector performance, before proceeding to data_h1. 
 
-#### data_h1
-(type: np.ndarray, list)
+#### data_h1: np.ndarray, list
 - This is the primary dataset on which we can expect to possibly detect a drift. In the real world, this would usually be the dataset we get post model deployment. To test detectors, a convenient (but not necessarily the best) practice is to take the test data and use that as our proxy for the deployed dataset. 
 - Multiple research papers and libraries tend to also use "perturbed" data for their choice of data_h1. Perturbations can include corruptions in images (vision data) or introduction of unneccessary words and phrases (text data). This is generally the first step in testing the efficacy of a drift detection method. Once again, if the detectors fails to detect a drift on manually perturbed data, then its quite likely it will not be able to detect drifts in the real, deployed data as well. 
 - Therefore, for our purposes, we have tried to minimize the use of artifically perturbed data
 and instead rely on test data/data from far away time periods as our data_h1 source. 
 
-<a name="other-func-params"/>
-
-## Note 2: Decription of other relevant parameters
-#### test: str
-Specify the kind of drift detection test we want: "KS", "KL", "JS", "MMD", "LSDD" (discussed below).
-
 #### sample_size: int
 Decides the number of samples from each of the above 3 datasets that we would like to work with. For instance, if the entire training data is 100K sentences, we can use a sample_size = 500 to randomly sample 500 of those sentences. 
 
-#### drift_type: str
-Specify the drift type we are looking for, based on the time/frquency: "Sudden", "Gradual" (discussed below). 
-
 #### windows: int (optional)
-This parameter is only required for gradual/incremental drift detection. This decided the number of segments we would like to break the data into. 
-For instance, if data_h1 has 100K data points, and if we wish to detect drifts gradually over time, a proxy approach would be to break the data in sets of 5K points and then randomly sample from each set separately. 
+This parameter is relevant for gradual drifts and helps break down the data into a certain number of buckets. These buckets can act like “batches” or “data streams”. The idea behind this approach is that we are trying to localize drifts to a certain time frame and check for consistencies (or lack thereof) in detection. If data_h1 has 100K data points, and if we wish to detect drifts gradually over time, a proxy approach would be to break the data in sets of 5K points and then randomly sample from each set separately.
 
+<a name="other-func-params"/>
+
+## Step 3: Preprocessing Data: Selecting Text Embedding Model and Dimension Reduction Approach
 #### embedding_model: str
 This parameter decides the kind of embedding the text goes through. The embeddings we consider thus far are: \\
 a) SBERT: A Python framework for state-of-the-art sentence, text and image embeddings. \\ 
@@ -165,16 +175,45 @@ neural network model to learn word associations from a large corpus of text
 #### SBERT_model: str
 This parameter is specific to the SBERT embedding models. If we choose to work with SBERT, we can specify the type of SBERT embedding out here. Ex. 'bert-base-uncased'
 
-#### transformation:
-Embeddings render multiple multi-dimensional vector spaces. For instance, USE results in 512 dimensions, and 'bert-base-uncased' results in 768 dimensions. For feature levels tests such  as KLD or JSD, such a large dimension might not be feasible to analyse, and thus we can reduce the dimensionality by selecting the most important components using methods such as PCA and SVD. 
 
+#### transformation: str
+Embeddings render multiple multi-dimensional vector spaces. For instance, USE results in 512 dimensions, and 'bert-base-uncased' results in 768 dimensions. We can thus try to use some neural network technique, such as autoencoders to reconstruct the data in reduced dimensions. Alibi Detectors use Untrained Autoencoders. For feature levels tests such  as KLD or JSD, such a large dimension might not be feasible to analyse, and thus we can reduce the dimensionality by selecting the most important components using methods such as PCA and SVD. 
+
+## Step 3: Specifying Drift Detection test and related parameters
+#### test: str
+Specify the kind of drift detection test we want: "KS", "KL", "JS", "MMD", "LSDD" (discussed below).
+
+#### drift_type: str
+Specify the drift type we are looking for, based on the time/frquency: "Sudden", "Gradual", or "Online" (discussed below). 
+
+#### ert: int
+    Expected Run Time before a drift is detected. Alibi detect uses this approach for it's 
+    online drift detectors. If the average ERT for the reference data is significantly higher
+    than the average run time for the drifted data, that might indicate a possible drift. 
+
+#### window_size: int
+    This parameter is used within Alibi's online detectors. 
+    It specifies the number of datapoints to include in one window.
+
+#### n_run: int
+    This parameter is used within Alibi's online detectors and specifies the number of runs
+    the detector must perform before we can get an average ERT. 
+
+#### n_bootstraps: int
+     This parameter is used within Alibi's online detectors
+
+#### context_type: str
+    Context that we wish to ignore
+    1) sub-population: if we wish to ignore the relative change in sub-population of certain 
+    classes
+    
 #### iterations: int
 We can run through multiple iterations of the embeddings to make our drift detection test more robust. For instance, if we only detect a drift on 1 out of 10 itertions, then we might be better off not flagging a drift at all.  
-
+    
 <a name="drift-detector-fundamentals"/>
 
 # Drift Detection Fundamentals
-![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/trials/images/DDBasic.png?raw=true)
+![alt text](https://github.com/akshitasingh0706/NaturallyDrifted/blob/main/images/DDPipeline.png?raw=true)
 
 <a name="drift-types"/>
 
@@ -182,7 +221,7 @@ We can run through multiple iterations of the embeddings to make our drift detec
 
 ### Based on Data (What kind of drift took place (features, labels, model/concept)?)
 
-![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/trials/images/DriftTypes_Data.png?raw=true)
+![alt text](https://github.com/akshitasingh0706/NaturallyDrifted/blob/main/images/DriftTypes_Data.png?raw=true)
 
 #### Covariate Drifts 
 When the input data drifts: **P(X) != P<sub>ref</sub>(X)** even though **P(X|Y) != P<sub>ref</sub>(X|Y)**. Such drifts happen when the distribution of the input data, or some of the features, drifts. The drift can happen gradually, or right after deployment (discussed in the next section). For further reading, please refer to this [Seldon article](https://www.seldon.io/what-is-covariate-shift)
@@ -198,7 +237,7 @@ For further reading, please refer to [Alibi Detect Documentation](https://docs.s
 
 ### Based on time/frequency (When did the drift happen?)
 
-![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/trials/images/DriftTypes_Time.png?raw=true)
+![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/main/images/DriftTypes_Time.png?raw=true)
 
 #### Sudden
 These drifts generally happens quite instataneously right after deployment, likely because of a very immediate change in some external factors. Ex. a sudden drift in labels from "News" to "Sports" right after an election and right before the Olympics. 
@@ -220,13 +259,13 @@ Recurrent drifts are drifts wherein the model requires perpetual retraining. The
 
 #### Kolmogorov–Smirnov (2-sample) test
 
-![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/trials/images/KS.png?raw=true)
+![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/main/images/KS.png?raw=true)
 
 A nonparametric test of the equality of continuous distributions. It quantifies a distance between the empirical distributions. For further reading, a possible resource you can refer to is this [article](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35g.htm)
 
 #### Kullback–Leibler divergence
 
-![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/trials/images/KL_JS_MMD.jpeg?raw=true)
+![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/main/images/KLD_MMD_JSD.jpeg?raw=true)
 
 A distribution-dependent test that calculates the divergence between 2 distributions. [This resource](https://machinelearningmastery.com/divergence-between-probability-distributions/) gives a good overview on how we can implement KL divergence in Python. 
 
@@ -237,7 +276,7 @@ A symmetric version of KL Divergence. It essent
 
 #### Maximum Mean Discrepency (MMD)
 
-![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/trials/images/MMD.png?raw=true)
+![alt text](https://github.com/akshitasingh0706/DriftDetection/blob/main/images/MMD.png?raw=true)
 
 A kernel based statistical test used to determine whether given two distribution are the same, first proposed in the paper ["A kernel two-sample test"](https://www.jmlr.org/papers/volume13/gretton12a/gretton12a.pdf). MMD quantifies the distance between the mean embeddings (distribution map- ping into Reproducing Kernel Hilbert Space) of the distributions.This feature map reduces the distributions to simpler mathematical val- ues.
 
@@ -245,17 +284,17 @@ A kernel based statistical test used to determine whether given two distribution
 LSDD is a method grounded in least squares, that estimates difference in distributions of a data pair without computing density distribution for each dataset indepen- dently. It was first proposed in the paper [Density Difference Estimation](https://direct.mit.edu/neco/article-abstract/25/10/2734/7921/Density-Difference-Estimation?redirectedFrom=fulltext)
 
 #### Learned Kernel
-[to be completed]
+Learned Kerned drift detectors are very similar to MMD detectors, but the "kernel" in the MMD is now replaced by a "deep kernel", in an attempt to create more complex mappings for more complex distributions. 
 
 <a name="prior-drift-tests"/>
 
 ## Types of Drift Detection Tests - Prior Drifts
-[to be completed]
+Prior drifts refer to a drift in the labels in the dataset, even when th input feature distributions remain the same. For instance, let's say we want to classify, through a diagnostic test, whether a patient has a certain allergy. Now, if the frequency of allergy dramatically changes, then that would be an example of a prior drift. 
 
 <a name="concept-drift-tests"/>
 
 ## Types of Drift Detection Tests - Concept Drifts
-[to be completed]
+A concept drift occurs when there is a fundamental change in disease presentation (same inputs, different output). For instance, in the ame problem as above, if now the severity of allergic response varies across populations (possible because of differential immunities given the different climates), that would be an example of a concept drift. 
 
 <a name="embedding-models"/>
 

@@ -26,50 +26,83 @@ class detectorParent:
                 plot: bool = True,
                  ):
         """
-        Define base arguments/parameters required by all Text related Alibi detectors. 
+        In this class, we define the base arguments and parameters that are required by Alibi
+        detectors. Not all of these parameters are used by each detector. 
         
         Args
         ----------
         data_ref : np.ndarray, list
-            Dataset on which model is trained (ex: training dataset). We compare a drift with a
-            reference to this distribution.
+            Dataset on which the original model is trained (ex: training dataset). We flag a drift 
+            with a reference to the distribution of this dataset. 
 
-        data_h0 :  np.ndarray, list (optional)
-            Generally, the same dataset as data_ref (or a stream that comes soon after).
-            We use the lack of drift in data_h0 (with data_ref as our reference) as the necessary 
-            condition to decide the robustness of the drift detection method. 
+        data_h0 :  np.ndarray, list 
+            This is an optional dataset that we can use as a sanity check for the efficacy of a drift
+            detector. Generally, we use the same dataset as data_ref (or a stream that comes soon after).
+            The lack of drift in data_h0 (with data_ref as our reference) is the necessary 
+            condition to decide the robustness of the drift detection method
 
         data_h1: np.ndarray, list
-            Principal dataset on which we might see a drift (ex. deployment data). It can be just one
-            sample (for sudden drifts) or stream of samples (for gradual drifts)
+            This is the principal dataset on which we might see a drift (ex. deployment data). 
+            It can be just one sample (for sudden drifts) or stream of samples (for gradual drifts).
+            Often, for pipelines, datasets come in batches, and each new batch can then be updated
+            to the new data_h1.
         
         sample_dict: dict
-            Dictionary with samples for reference and comparison data (or streams of comparison data)
-
-        test: str
-            Here, we specify the kind of drift detection test we want (KS, KLD, JSD, MMD, LSDD).
-            The descriptions for each are discussed in the README.md.  
+            Dictionary with samples for reference and comparison data (or streams of comparison data).
+            The user can directly input the dictionary as our dataset source if they would prefer to 
+            organize the data on their own. 
 
         sample_size: int
             This parameter decides the number of samples from each of the above 3 datasets that we would
             like to work with. For instance, if the entire training data is 100K sentences, we can use
             a sample_size = 500 to randomly sample 500 of those sentences. 
+        
+        test: str
+            Here, we specify the kind of drift detection test we want (KS, KLD, JSD, MMD, LSDD).
+            Each of them is described in greater detail in the README.md.  
 
         drift_type: str
-            As discussed in the README, there are many different types of drifts. Here we specify
-            the drift type we are looking for, based on the time/frquency. drift_type asks us 
-            to specify whether we want to detect sudden drifts or more gradual drifts. 
+            Drifts can vary depending on the time horizan and frequency at which we try to detect
+            them. This parameter asks the user to specify the type of drift ("Sudden", "Gradual", 
+            "Online"). The details of each are in README.md
 
-        windows: int (optional)
-            This decided the number of segments we would like to break the data into. 
-            This parameter is only required for gradual/incremental drift detection. 
-            For instance, if data_h1 has 100K data points, and if we wish to detect drifts
+        plot: bool
+            This parameter asks the user if they wish to see some of the plots of the results
+            from the drift detection. Not every detector will result in relevant plot.
+
+        windows: int 
+            This parameter is relevant for gradual drifts and helps break down the data into a 
+            certain number of buckets. These buckets can act like "batches" or "data streams".
+            The idea behind this approach is that we are trying to localize drifts to a certain 
+            time frame and check for consistencies (or lack thereof) in detection. 
+            If data_h1 has 100K data points, and if we wish to detect drifts
             gradually over time, a proxy approach would be to break the data in sets of 5K points
             and then randomly sample from each set separately. 
         
-        SBERT_model: str
+        SBERT_model: str 
             This parameter is specific to the SBERT embedding models. If we choose to work with SBERT,
             we can specify the type of SBERT embedding out here. Ex. 'bert-base-uncased'  
+
+        ert: int (optional)
+            Expected Run Time before a drift is detected. Alibi detect uses this approach for it's 
+            online drift detectors. If the average ERT for the reference data is significantly higher
+            than the average run time for the drifted data, that might indicate a possible drift. 
+        
+        window_size: int
+            This parameter is used within Alibi's online detectors. 
+            It specifies the number of datapoints to include in one window.
+
+        n_run: int
+            This parameter is used within Alibi's online detectors and specifies the number of runs
+            the detector must perform before we can get an average ERT. 
+
+        n_bootstraps: int
+             This parameter is used within Alibi's online detectors
+
+        context_type: str
+            Context that we wish to ignore
+            1) sub-population: if we wish to ignore the relative change in sub-population of certain 
+            classes
 
         embedding_model: str
             This is the principle parameter of this class. It decided the kind of embedding the text 

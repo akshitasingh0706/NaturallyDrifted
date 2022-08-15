@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>embedding module &mdash; NaturallyDrifted  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="distributions module" href="distributions.html" />
+    <link rel="prev" title="baseModels module" href="baseModels.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> NaturallyDrifted
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../baseModules/modules.html">Base Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../alibiModules/modules.html">Alibi Detectors</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Feature Level Detectors</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="baseModels.html">baseModels module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">embedding module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions.html">distributions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="myDetectors.html">myDetectors module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NaturallyDrifted</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">Feature Level Detectors</a> &raquo;</li>
+      <li>embedding module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/fldModules/embedding.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-embedding">
+<span id="embedding-module"></span><h1>embedding module<a class="headerlink" href="#module-embedding" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="embedding.embedding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">embedding.</span></span><span class="sig-name descname"><span class="pre">embedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#embedding.embedding" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../baseModules/sampling.html#sampling.samplingData" title="sampling.samplingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">samplingData</span></code></a>, <a class="reference internal" href="../baseModules/base.html#base.detectorParent" title="base.detectorParent"><code class="xref py py-class docutils literal notranslate"><span class="pre">detectorParent</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="embedding.embedding.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#embedding.embedding.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>In this class, we turn the samples of text inputs into text embeddings, which we can then use
+to a) either construct distributions, or b) calculate drift on. There are many different kinds
+of text embeddings and encodings. In this class, we cover 3 umbrella embeddings (discussed below)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A dictionary containing the embeddings as decided by the choice of embedding model and drift detection test type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedding.embedding.dim_reduction">
+<span class="sig-name descname"><span class="pre">dim_reduction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">emb_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#embedding.embedding.dim_reduction" title="Permalink to this definition"></a></dt>
+<dd><p>Embeds text inherited from the sampling class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>emb_dict</strong> (<em>dictionary</em>) – </p></li>
+<li><p><strong>method</strong> (<em>Dictionary of embeddings as returned by the embed_data</em>) – </p></li>
+<li><p><strong>component</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – </p></li>
+<li><p><strong>SVD</strong> (<em>The number top components we want from PCA or</em>) – </p></li>
+<li><p><strong>n_iters</strong> (<em>int</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>a dictionary containing the embeddings as decided by the choice of embedding model and</em></p></li>
+<li><p><em>drift detection test type</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedding.embedding.embed_data">
+<span class="sig-name descname"><span class="pre">embed_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#embedding.embedding.embed_data" title="Permalink to this definition"></a></dt>
+<dd><p>Embeds text inherited from the sampling class. The type of embedding (Doc2Vec, SBERT etc) is
+decided by the user</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A dictionary containing the embeddings as decided by the choice of embedding model and drift detection test type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedding.embedding.embed_data_iters">
+<span class="sig-name descname"><span class="pre">embed_data_iters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#embedding.embedding.embed_data_iters" title="Permalink to this definition"></a></dt>
+<dd><p>Runs the embedding function “iterations” number of times, if the selected drift detection test
+is the KS Test. For KL and JS Divergence, the iterations are taken care of in the distributions
+class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A dictionary containing the embeddings as decided by the choice of embedding model and drift detection test type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedding.embedding.final_embeddings">
+<span class="sig-name descname"><span class="pre">final_embeddings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#embedding.embedding.final_embeddings" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><em>a dictionary containing the embeddings as decided by the choice of embedding model and</em></p></li>
+<li><p><em>drift detection test type</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedding.embedding.sampleData">
+<span class="sig-name descname"><span class="pre">sampleData</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#embedding.embedding.sampleData" title="Permalink to this definition"></a></dt>
+<dd><p>Call the samplingData class to construct samples from the input data provided by the user</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dictionary with samples for reference and comparison data (or streams of comparison data).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="baseModels.html" class="btn btn-neutral float-left" title="baseModels module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="distributions.html" class="btn btn-neutral float-right" title="distributions module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Akshita Singh.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

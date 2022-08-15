@@ -19,7 +19,7 @@ class baseModels:
 
         Returns
         ----------
-        A callable model
+        An embedding model
         """
 
     def doc2vec_base(self, 
@@ -28,19 +28,17 @@ class baseModels:
                     window: Optional[int] = 2,
                     min_count: Optional[int] = 1,
                     workers: Optional[int] = 4):
-        '''
-        sample_ref: dataset to get samples for "Tagged Documents"
-        Doc2Vec params:
-            vector_size
-            window
-            min_count
-            workers
-        '''
+        """
+        Develops model for Doc2Vec embeddings
+        """
         documents = [TaggedDocument(np.random.choice(self.data, self.sample_size), [i]) for i, doc in enumerate(common_texts)]
         model = Doc2Vec(documents, vector_size = 100, window = 2, min_count = 1, workers = 4)
         return model
 
     def sbert_base(self):
+        """
+        Develops model for Sentence Transformer embeddings
+        """
         model = SentenceTransformer(self.SBERT_model)
         return model
         

@@ -10,7 +10,9 @@ Welcome to NaturallyDrifted's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   modules
+   baseModules/modules
+   alibiModules/modules
+   fldModules/modules
 
 Indices and tables
 ==================
