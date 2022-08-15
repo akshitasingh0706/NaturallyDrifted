@@ -213,7 +213,11 @@ We can run through multiple iterations of the embeddings to make our drift detec
 <a name="drift-detector-fundamentals"/>
 
 # Drift Detection Fundamentals
+<<<<<<< HEAD
 ![alt text](https://github.com/akshitasingh0706/NaturallyDrifted/blob/main/images/DDPipeline.png?raw=true)
+=======
+![alt text](https://github.com/akshitasingh0706/NaturallyDrifted/images/DDBasic.png?raw=true)
+>>>>>>> 42a9d733a1631c2c814538fab9627ec31b54e4f6
 
 <a name="drift-types"/>
 
@@ -221,7 +225,11 @@ We can run through multiple iterations of the embeddings to make our drift detec
 
 ### Based on Data (What kind of drift took place (features, labels, model/concept)?)
 
+<<<<<<< HEAD
 ![alt text](https://github.com/akshitasingh0706/NaturallyDrifted/blob/main/images/DriftTypes_Data.png?raw=true)
+=======
+![alt text](https://github.com/akshitasingh0706/NaturallyDrifted/blob/main/images/DriftTypes_Data.png?raw=true)
+>>>>>>> 42a9d733a1631c2c814538fab9627ec31b54e4f6
 
 #### Covariate Drifts 
 When the input data drifts: **P(X) != P<sub>ref</sub>(X)** even though **P(X|Y) != P<sub>ref</sub>(X|Y)**. Such drifts happen when the distribution of the input data, or some of the features, drifts. The drift can happen gradually, or right after deployment (discussed in the next section). For further reading, please refer to this [Seldon article](https://www.seldon.io/what-is-covariate-shift)
