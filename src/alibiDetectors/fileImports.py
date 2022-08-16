@@ -4,5 +4,5 @@ class imports:
         from basicDetectors import basicDetectors
         from onlineDetectors import onlineDetectors
         from contextDetectors import contextDetectors
-        from allDetectors import allDetectors
-        return samplingData, basicDetectors, onlineDetectors, contextDetectors, allDetectors
+        from alibiDetectors import alibiDetectors
+        return samplingData, basicDetectors, onlineDetectors, contextDetectors, alibiDetectors

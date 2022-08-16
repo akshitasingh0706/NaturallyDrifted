@@ -14,6 +14,7 @@ from functools import partial
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from alibi_detect.cd import MMDDriftOnline, LSDDDriftOnline
 from alibi_detect.models.tensorflow import TransformerEmbedding
@@ -144,19 +145,21 @@ class onlineDetectors(samplingData, detectorParent):
                     t += 1
         
         def plot(cd, times_list, ert):
-          # get intersection of t-stat overtaking the threshold
-          ts = np.arange(cd.t)
-          plt.plot(ts, cd.test_stats, label='Test statistic')
-          plt.plot(ts, cd.thresholds, label='Thresholds')
-          plt.title('Test Statistic and Threshold intersection')
-          plt.xlabel('Time window (t)', fontsize=16)
-          plt.ylabel('Test Staistics at t ($T_t$)', fontsize=16)
-          plt.legend(loc='upper right', fontsize=14)
-          plt.show()
+            # get intersection of t-stat overtaking the threshold
+            ts = np.arange(cd.t)
+            sns.set(rc={'axes.facecolor':'lightblue', 'figure.facecolor':'lightgreen'})
+            p = sns.lineplot(x = ts, y = cd.test_stats, label='Test statistic')
+            p = sns.lineplot(x = ts, y = cd.thresholds, label='Thresholds')
+            p.set_title('Test Statistic and Threshold intersection', fontsize=16, color = 'Blue')
+            p.set_xlabel('Time window (t)', fontsize=16, color = 'Blue')
+            p.set_ylabel('Test Staistics at t ($T_t$)', fontsize=16, color = 'Blue')
+            plt.legend(loc='upper right', fontsize=12)
+            plt.show()
 
-          # get the probability plot of inverse erts against geometric distribution
-          scipy.stats.probplot(np.array(times_list), dist=scipy.stats.geom, sparams=1/ert, plot=plt)
-          plt.show()
+            # get the probability plot of inverse erts against geometric distribution
+            sns.set(rc={'axes.facecolor':'lightgreen', 'figure.facecolor':'lightblue'})
+            scipy.stats.probplot(np.array(times_list), dist=scipy.stats.geom, sparams=1/ert, plot=plt)
+            plt.show()
 
         print("No Drift Scenario")
         times_h0 = [time_run(cd, data_h0, self.window_size) for _ in range(self.n_runs)]

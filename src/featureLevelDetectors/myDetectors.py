@@ -4,6 +4,7 @@ from scipy import stats
 import pandas as pd
 from typing import Callable, Dict, Optional, Union
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from base import detectorParent
 from baseModels import baseModels 
@@ -142,10 +143,19 @@ class myDetectors(distributions, embedding, samplingData, detectorParent):
                 pvals[it, ww -1] = stats.ks_2samp(final_dict[it][0], final_dict[it][ww])[1] 
 
         # plotting results
+        sns.set(rc={'axes.facecolor':'lightblue', 'figure.facecolor':'lightgreen'})
         for window in range(pvals.shape[1]):
-            plt.plot(pvals[:, window])
-        plt.title("P-values for Doc2Vec + KS Test")
+            p = sns.lineplot(pvals[:, window])
+        p.set_title("P-values for Doc2Vec + KS Test")
         plt.legend(["ww-"+ str(i) for i in range(pvals.shape[1])])
+        plt.show()
+
+        sns.set(rc={'axes.facecolor':'lightgreen', 'figure.facecolor':'lightblue'})
+        for window in range(dists.shape[1]):
+            p = sns.lineplot(dists[:, window])
+        p.set_title("Distances for Doc2Vec + KS Test")
+        plt.legend(["ww-"+ str(i) for i in range(dists.shape[1])])
+        plt.show()
 
         test_stats = {}
         test_stats["distances"] = dists
@@ -234,7 +244,7 @@ class myDetectors(distributions, embedding, samplingData, detectorParent):
                 kld[ww -1, dim] = self.kl_divergence(final_dict[0][0][:, dim], final_dict[0][ww][:, dim]) 
                 jsd[ww -1, dim] = self.js_divergence(final_dict[0][0][:, dim], final_dict[0][ww][:, dim])
 
-        if self.plot == 'Yes':
+        if self.plot:
             # plotting KLD results
             if self.test == "KL":
                 for window in range(kld.shape[0]):

@@ -11,6 +11,7 @@ import tensorflow as tf
 from transformers import AutoTokenizer
 from functools import partial
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from alibi_detect.cd import KSDrift, MMDDrift, LearnedKernelDrift, ClassifierDrift, LSDDDrift
 from alibi_detect.utils.saving import save_detector, load_detector
@@ -140,16 +141,25 @@ class basicDetectors(samplingData, detectorParent):
                 distances.append(preds['data']['distance'])
 
             if self.plot:
-                plt.plot(pvalues)
-                plt.title("P-Values for Non-Calibrated Gradual Data broken by Time-Windows")
-                plt.xlabel("Time Windows")
-                plt.xlabel("P-values")                
+                windows = range(1, self.windows)
+                sns.set(rc={'axes.facecolor':'lightblue', 'figure.facecolor':'lightgreen'})
+                p = sns.lineplot(x = windows, y = pvalues, markers= 'o', color = 'blue')
+                p.axhline(self.pval_thresh, color = 'red', linestyle = '-')
+                p.set_xlabel("Time Windows", fontsize = 12, color = 'Blue')
+                p.set_ylabel("P-Values", fontsize = 12, color = 'Blue')
+                p.set_title(f"P-Values for %s Drift Detector per Data Window  " %self.test 
+                            ,fontsize = 13, color = 'Blue')
                 plt.show()
-                plt.plot(distances)
-                plt.title("Distances for Non-Calibrated Gradual Data broken by Time-Windows")
-                plt.xlabel("Time Windows")
-                plt.xlabel("Distances") 
-                plt.show()
+
+                windows = range(1, self.windows)
+                sns.set(rc={'axes.facecolor':'lightgreen', 'figure.facecolor':'lightblue'})
+                p = sns.lineplot(x = windows, y = distances, markers= 'o', color = 'blue')
+                p.axhline(self.dist_thresh, color = 'red', linestyle = '-')
+                p.set_xlabel("Time Windows", fontsize = 12, color = 'Blue')
+                p.set_ylabel("Distances", fontsize = 12, color = 'Blue')
+                p.set_title(f"Distances for %s Drift Detector per Data Window" %self.test  
+                            ,fontsize = 13, color = 'Blue')  
+                plt.show()         
 
         else:
             print("The following drift type is not included")
