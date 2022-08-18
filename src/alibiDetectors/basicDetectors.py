@@ -9,15 +9,19 @@ import numpy as np
 import os
 import tensorflow as tf
 from transformers import AutoTokenizer
+from sentence_transformers import SentenceTransformer
 from functools import partial
 import matplotlib.pyplot as plt
 import seaborn as sns
+import torch
+import torch.nn as nn
 
 from alibi_detect.cd import KSDrift, MMDDrift, LearnedKernelDrift, ClassifierDrift, LSDDDrift
 from alibi_detect.utils.saving import save_detector, load_detector
 from alibi_detect.models.tensorflow import TransformerEmbedding
 from alibi_detect.cd.tensorflow import UAE
 from alibi_detect.cd.tensorflow import preprocess_drift
+from alibi_detect.utils.pytorch.kernels import DeepKernel
 
 from sampling import samplingData
 from base import detectorParent
@@ -50,6 +54,22 @@ class basicDetectors(samplingData, detectorParent):
         else:
             return self.sample_dict
 
+    # embed data - for learned kernel
+    def embedData(self):
+        """
+        Call the samplingData class to construct samples from the input data provided by the user
+
+        Returns
+        ----------  
+        Dictionary with samples for reference and comparison data (or streams of comparison data).
+        """
+        model = SentenceTransformer(self.SBERT_model)
+        temp_dict = self.sampleData()
+        sample_dict = {}
+        for ww in temp_dict.keys():
+            sample_dict[ww] = model.encode(temp_dict[ww])
+        return sample_dict
+        
     def preprocess(self):
         """
         Here we process the text data in the following manner:
@@ -99,12 +119,82 @@ class basicDetectors(samplingData, detectorParent):
         elif self.test == "LSDD":
             cd = LSDDDrift(data_ref, p_val=.05, preprocess_fn=preprocess_fn, 
                       n_permutations=100, input_shape=(self.max_len,))
-        elif self.test == "LearnedKernel":
-            pass
+        elif self.test == "LearnedKernel":    
+            sample_dict = self.embedData()
+            kernel = DeepKernel(self.proj, eps=0.01)
+            cd = LearnedKernelDrift(sample_dict[0], kernel, backend='pytorch', 
+                    p_val= self.pval_thresh, epochs=1)
+        elif self.test == 'all':
+            cd_dict = {}
+            # model for MMD drifts
+            cd_mmd = MMDDrift(data_ref, p_val=.05, preprocess_fn=preprocess_fn, 
+                      n_permutations=100, input_shape=(self.max_len,))
+            cd_dict['MMD'] = cd_mmd
+            # model for LSDD drifts
+            cd_lsdd = LSDDDrift(data_ref, p_val=.05, preprocess_fn=preprocess_fn, 
+                      n_permutations=100, input_shape=(self.max_len,))
+            cd_dict['LSDD'] = cd_lsdd
+            # model for Learned Kernel drifts
+            sample_dict = self.embedData()
+            kernel = DeepKernel(self.proj, eps=0.01)
+            cd_lk = LearnedKernelDrift(sample_dict[0], kernel, backend='pytorch', 
+                    p_val= self.pval_thresh, epochs=1)
+            cd_dict['LK'] = cd_lk
         else:
             print("The following detector is not included in the package yet")
-        return cd if self.test in ['MMD', 'LSDD', 'LearnedKernel'] else 0
+        return cd if self.test in ['MMD', 'LSDD', 'LearnedKernel'] else cd_dict
     
+    # only run if the user wants all detector results
+    def run_all(self):
+        cd = self.detector() # must be a dictionary by default
+        sample_dict = self.sampleData()
+        embed_dict = self.embedData()
+        test_stats = {'pvals_mmd': [], 'pvals_lsdd': [],  'pvals_lk': [],
+                    'dist_mmd': [], 'dist_lsdd': [],  'dist_lk': [] }
+
+        for ww in range(1,len(sample_dict)):
+            data = sample_dict[ww]
+            embedData = embed_dict[ww] # required for Learned Kernel
+            # MMD
+            mmd_preds = cd['MMD'].predict(data)
+            test_stats['pvals_mmd'].append(mmd_preds['data']['p_val'])
+            test_stats['dist_mmd'].append(mmd_preds['data']['distance'])
+            # LSDD
+            lsdd_preds = cd['LSDD'].predict(data)
+            test_stats['pvals_lsdd'].append(lsdd_preds['data']['p_val'])
+            test_stats['dist_lsdd'].append(lsdd_preds['data']['distance'])
+            # Learned Kernel
+            lk_preds = cd['LK'].predict(embedData)
+            test_stats['pvals_lk'].append(lk_preds['data']['p_val'])
+            test_stats['dist_lk'].append(lk_preds['data']['distance'])
+
+        windows = range(1, self.windows) if self.windows else 2 # either gradual or sudden drifts
+        sns.set(rc={'axes.facecolor':'lightblue', 'figure.facecolor':'lightgreen'})
+        p = sns.lineplot(x = windows, y = test_stats['pvals_mmd'] , markers= 'o', color = 'blue')
+        p = sns.lineplot(x = windows, y = test_stats['pvals_lsdd'] , markers= 'o', color = 'green')
+        p = sns.lineplot(x = windows, y = test_stats['pvals_lk'] , markers= 'o', color = 'purple')
+        p.axhline(self.pval_thresh, color = 'red', linestyle = '-')
+        p.set_xlabel("Time Windows", fontsize = 12, color = 'Blue')
+        p.set_ylabel("P-Values", fontsize = 12, color = 'Blue')
+        p.set_title("P-Values for All Drift Detector per Data Window  "
+                    ,fontsize = 13, color = 'Blue')
+        p.legend(labels = ['MMD', 'LSDD', 'Learned Kernel'])
+        plt.show()
+
+        sns.set(rc={'axes.facecolor':'lightgreen', 'figure.facecolor':'lightblue'})
+        p = sns.lineplot(x = windows, y = test_stats['dist_mmd'] , markers= 'o', color = 'blue')
+        p = sns.lineplot(x = windows, y = test_stats['dist_lsdd'] , markers= 'o', color = 'green')
+        p = sns.lineplot(x = windows, y = test_stats['dist_lk'] , markers= 'o', color = 'purple')
+        p.axhline(self.dist_thresh, color = 'red', linestyle = '-')
+        p.set_xlabel("Time Windows", fontsize = 12, color = 'Blue')
+        p.set_ylabel("Distances", fontsize = 12, color = 'Blue')
+        p.set_title("Distances for All Drift Detector per Data Window"  
+                    ,fontsize = 13, color = 'Blue')
+        p.legend(labels = ['MMD', 'LSDD', 'Learned Kernel'])
+        plt.show()
+
+        return test_stats
+
     def run(self):
         """
         Here, we run the detection model from the previous function, on the comparison data on 
@@ -116,8 +206,19 @@ class basicDetectors(samplingData, detectorParent):
         """
         labels = ['No!', 'Yes!']
         cd = self.detector()
+        
+        if self.test in ['MMD', 'LSDD']:
+            sample_dict = self.sampleData()
+        elif self.test == 'LearnedKernel':
+            sample_dict = self.embedData()
+        elif self.test == 'all':
+            pass
+        else:
+            print("This test is not included yet")
+        
+        if isinstance(cd, dict): # (or self.test == 'all')
+            return self.run_all()
 
-        sample_dict = self.sampleData()
         pvalues = []
         distances = []
         if self.drift_type == "Sudden":  

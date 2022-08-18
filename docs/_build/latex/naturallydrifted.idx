@@ -1,0 +1,70 @@
+\indexentry{module@\spxentry{module}!base@\spxentry{base}|hyperpage}{1}
+\indexentry{base@\spxentry{base}!module@\spxentry{module}|hyperpage}{1}
+\indexentry{detectorParent (class in base)@\spxentry{detectorParent}\spxextra{class in base}|hyperpage}{1}
+\indexentry{\_\_init\_\_() (base.detectorParent method)@\spxentry{\_\_init\_\_()}\spxextra{base.detectorParent method}|hyperpage}{1}
+\indexentry{module@\spxentry{module}!sampling@\spxentry{sampling}|hyperpage}{3}
+\indexentry{sampling@\spxentry{sampling}!module@\spxentry{module}|hyperpage}{3}
+\indexentry{samplingData (class in sampling)@\spxentry{samplingData}\spxextra{class in sampling}|hyperpage}{3}
+\indexentry{\_\_init\_\_() (sampling.samplingData method)@\spxentry{\_\_init\_\_()}\spxextra{sampling.samplingData method}|hyperpage}{3}
+\indexentry{random\_sample() (sampling.samplingData method)@\spxentry{random\_sample()}\spxextra{sampling.samplingData method}|hyperpage}{3}
+\indexentry{sample\_data\_gradual() (sampling.samplingData method)@\spxentry{sample\_data\_gradual()}\spxextra{sampling.samplingData method}|hyperpage}{3}
+\indexentry{sample\_data\_online() (sampling.samplingData method)@\spxentry{sample\_data\_online()}\spxextra{sampling.samplingData method}|hyperpage}{3}
+\indexentry{sample\_data\_sudden() (sampling.samplingData method)@\spxentry{sample\_data\_sudden()}\spxextra{sampling.samplingData method}|hyperpage}{3}
+\indexentry{samples() (sampling.samplingData method)@\spxentry{samples()}\spxextra{sampling.samplingData method}|hyperpage}{3}
+\indexentry{module@\spxentry{module}!basicDetectors@\spxentry{basicDetectors}|hyperpage}{5}
+\indexentry{basicDetectors@\spxentry{basicDetectors}!module@\spxentry{module}|hyperpage}{5}
+\indexentry{basicDetectors (class in basicDetectors)@\spxentry{basicDetectors}\spxextra{class in basicDetectors}|hyperpage}{5}
+\indexentry{\_\_init\_\_() (basicDetectors.basicDetectors method)@\spxentry{\_\_init\_\_()}\spxextra{basicDetectors.basicDetectors method}|hyperpage}{5}
+\indexentry{detector() (basicDetectors.basicDetectors method)@\spxentry{detector()}\spxextra{basicDetectors.basicDetectors method}|hyperpage}{5}
+\indexentry{embedData() (basicDetectors.basicDetectors method)@\spxentry{embedData()}\spxextra{basicDetectors.basicDetectors method}|hyperpage}{5}
+\indexentry{preprocess() (basicDetectors.basicDetectors method)@\spxentry{preprocess()}\spxextra{basicDetectors.basicDetectors method}|hyperpage}{5}
+\indexentry{run() (basicDetectors.basicDetectors method)@\spxentry{run()}\spxextra{basicDetectors.basicDetectors method}|hyperpage}{5}
+\indexentry{run\_all() (basicDetectors.basicDetectors method)@\spxentry{run\_all()}\spxextra{basicDetectors.basicDetectors method}|hyperpage}{6}
+\indexentry{sampleData() (basicDetectors.basicDetectors method)@\spxentry{sampleData()}\spxextra{basicDetectors.basicDetectors method}|hyperpage}{6}
+\indexentry{module@\spxentry{module}!onlineDetectors@\spxentry{onlineDetectors}|hyperpage}{6}
+\indexentry{onlineDetectors@\spxentry{onlineDetectors}!module@\spxentry{module}|hyperpage}{6}
+\indexentry{onlineDetectors (class in onlineDetectors)@\spxentry{onlineDetectors}\spxextra{class in onlineDetectors}|hyperpage}{6}
+\indexentry{\_\_init\_\_() (onlineDetectors.onlineDetectors method)@\spxentry{\_\_init\_\_()}\spxextra{onlineDetectors.onlineDetectors method}|hyperpage}{6}
+\indexentry{detector() (onlineDetectors.onlineDetectors method)@\spxentry{detector()}\spxextra{onlineDetectors.onlineDetectors method}|hyperpage}{6}
+\indexentry{preprocess() (onlineDetectors.onlineDetectors method)@\spxentry{preprocess()}\spxextra{onlineDetectors.onlineDetectors method}|hyperpage}{6}
+\indexentry{run() (onlineDetectors.onlineDetectors method)@\spxentry{run()}\spxextra{onlineDetectors.onlineDetectors method}|hyperpage}{6}
+\indexentry{sampleData() (onlineDetectors.onlineDetectors method)@\spxentry{sampleData()}\spxextra{onlineDetectors.onlineDetectors method}|hyperpage}{7}
+\indexentry{module@\spxentry{module}!alibiDetectors@\spxentry{alibiDetectors}|hyperpage}{7}
+\indexentry{alibiDetectors@\spxentry{alibiDetectors}!module@\spxentry{module}|hyperpage}{7}
+\indexentry{alibiDetectors (class in alibiDetectors)@\spxentry{alibiDetectors}\spxextra{class in alibiDetectors}|hyperpage}{7}
+\indexentry{\_\_init\_\_() (alibiDetectors.alibiDetectors method)@\spxentry{\_\_init\_\_()}\spxextra{alibiDetectors.alibiDetectors method}|hyperpage}{7}
+\indexentry{run() (alibiDetectors.alibiDetectors method)@\spxentry{run()}\spxextra{alibiDetectors.alibiDetectors method}|hyperpage}{8}
+\indexentry{module@\spxentry{module}!baseModels@\spxentry{baseModels}|hyperpage}{9}
+\indexentry{baseModels@\spxentry{baseModels}!module@\spxentry{module}|hyperpage}{9}
+\indexentry{baseModels (class in baseModels)@\spxentry{baseModels}\spxextra{class in baseModels}|hyperpage}{9}
+\indexentry{SBERT\_model (baseModels.baseModels attribute)@\spxentry{SBERT\_model}\spxextra{baseModels.baseModels attribute}|hyperpage}{9}
+\indexentry{doc2vec\_base() (baseModels.baseModels method)@\spxentry{doc2vec\_base()}\spxextra{baseModels.baseModels method}|hyperpage}{9}
+\indexentry{sbert\_base() (baseModels.baseModels method)@\spxentry{sbert\_base()}\spxextra{baseModels.baseModels method}|hyperpage}{9}
+\indexentry{module@\spxentry{module}!embedding@\spxentry{embedding}|hyperpage}{9}
+\indexentry{embedding@\spxentry{embedding}!module@\spxentry{module}|hyperpage}{9}
+\indexentry{embedding (class in embedding)@\spxentry{embedding}\spxextra{class in embedding}|hyperpage}{9}
+\indexentry{\_\_init\_\_() (embedding.embedding method)@\spxentry{\_\_init\_\_()}\spxextra{embedding.embedding method}|hyperpage}{9}
+\indexentry{dim\_reduction() (embedding.embedding method)@\spxentry{dim\_reduction()}\spxextra{embedding.embedding method}|hyperpage}{9}
+\indexentry{embed\_data() (embedding.embedding method)@\spxentry{embed\_data()}\spxextra{embedding.embedding method}|hyperpage}{10}
+\indexentry{embed\_data\_iters() (embedding.embedding method)@\spxentry{embed\_data\_iters()}\spxextra{embedding.embedding method}|hyperpage}{10}
+\indexentry{final\_embeddings() (embedding.embedding method)@\spxentry{final\_embeddings()}\spxextra{embedding.embedding method}|hyperpage}{10}
+\indexentry{sampleData() (embedding.embedding method)@\spxentry{sampleData()}\spxextra{embedding.embedding method}|hyperpage}{10}
+\indexentry{module@\spxentry{module}!distributions@\spxentry{distributions}|hyperpage}{10}
+\indexentry{distributions@\spxentry{distributions}!module@\spxentry{module}|hyperpage}{10}
+\indexentry{distributions (class in distributions)@\spxentry{distributions}\spxextra{class in distributions}|hyperpage}{10}
+\indexentry{\_\_init\_\_() (distributions.distributions method)@\spxentry{\_\_init\_\_()}\spxextra{distributions.distributions method}|hyperpage}{10}
+\indexentry{distributions\_doc2vec() (distributions.distributions method)@\spxentry{distributions\_doc2vec()}\spxextra{distributions.distributions method}|hyperpage}{10}
+\indexentry{distributions\_seneconders() (distributions.distributions method)@\spxentry{distributions\_seneconders()}\spxextra{distributions.distributions method}|hyperpage}{11}
+\indexentry{final\_distributions() (distributions.distributions method)@\spxentry{final\_distributions()}\spxextra{distributions.distributions method}|hyperpage}{11}
+\indexentry{kde() (distributions.distributions method)@\spxentry{kde()}\spxextra{distributions.distributions method}|hyperpage}{11}
+\indexentry{module@\spxentry{module}!myDetectors@\spxentry{myDetectors}|hyperpage}{11}
+\indexentry{myDetectors@\spxentry{myDetectors}!module@\spxentry{module}|hyperpage}{11}
+\indexentry{myDetectors (class in myDetectors)@\spxentry{myDetectors}\spxextra{class in myDetectors}|hyperpage}{11}
+\indexentry{\_\_init\_\_() (myDetectors.myDetectors method)@\spxentry{\_\_init\_\_()}\spxextra{myDetectors.myDetectors method}|hyperpage}{11}
+\indexentry{divergence\_doc2vec() (myDetectors.myDetectors method)@\spxentry{divergence\_doc2vec()}\spxextra{myDetectors.myDetectors method}|hyperpage}{12}
+\indexentry{divergence\_seneconders() (myDetectors.myDetectors method)@\spxentry{divergence\_seneconders()}\spxextra{myDetectors.myDetectors method}|hyperpage}{12}
+\indexentry{js\_divergence() (myDetectors.myDetectors method)@\spxentry{js\_divergence()}\spxextra{myDetectors.myDetectors method}|hyperpage}{12}
+\indexentry{kl\_divergence() (myDetectors.myDetectors method)@\spxentry{kl\_divergence()}\spxextra{myDetectors.myDetectors method}|hyperpage}{12}
+\indexentry{ks\_doc2vec() (myDetectors.myDetectors method)@\spxentry{ks\_doc2vec()}\spxextra{myDetectors.myDetectors method}|hyperpage}{13}
+\indexentry{ks\_sbert() (myDetectors.myDetectors method)@\spxentry{ks\_sbert()}\spxextra{myDetectors.myDetectors method}|hyperpage}{13}
+\indexentry{run() (myDetectors.myDetectors method)@\spxentry{run()}\spxextra{myDetectors.myDetectors method}|hyperpage}{13}

@@ -23,6 +23,7 @@ author = 'Akshita Singh'
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "rst2pdf.pdfbuilder"
 ]
 
 templates_path = ['_templates']
@@ -36,6 +37,8 @@ napoleon_use_param = True
 
 source_suffix = [".rst", ".md"]
 master_doc = "index"
+
+pdf_documents = [('index', u'rst2pdf', u'Sample rst2pdf doc', u'Your Name'),]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

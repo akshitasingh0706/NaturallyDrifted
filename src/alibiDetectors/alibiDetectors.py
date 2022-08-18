@@ -1,3 +1,4 @@
+from sentence_transformers import SentenceTransformer
 from math import log2
 import numpy as np
 from scipy import stats
@@ -112,7 +113,7 @@ class alibiDetectors(detectorParent):
         """                   
         super(alibiDetectors, self).__init__(*args, **kwargs)
     def run(self):
-        if self.test in ["MMD", "LSDD"] and self.drift_type in ['Sudden', 'Gradual']:
+        if self.test in ["MMD", "LSDD", 'all'] and self.drift_type in ['Sudden', 'Gradual']:
             cd = basicDetectors(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1,
                                sample_size = self.sample_size, windows = self.windows,
                                 
@@ -123,7 +124,7 @@ class alibiDetectors(detectorParent):
                                 emb_type = self.emb_type, n_layers = self.n_layers, enc_dim = self.enc_dim,
                                 tokenizer_size = self.tokenizer_size, batch_size = self.batch_size, max_len = self.max_len
                                )
-            cd.run()
+            cd.run()            
         elif self.test in ["MMD", "LSDD"] and self.drift_type == "Online":
             cd = onlineDetectors(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1,
                                sample_size = self.sample_size, windows = self.windows,
@@ -137,7 +138,7 @@ class alibiDetectors(detectorParent):
                                  
                                  ert = self.ert, n_runs = self.n_runs, window_size = self.window_size
                                 )
-            cd.run()   
+            cd.run()
         elif self.context is not None:
             cd = contextDetectors(data_ref = self.data_ref, data_h0 = self.data_h0, data_h1 = self.data_h1)
             cd.run() 

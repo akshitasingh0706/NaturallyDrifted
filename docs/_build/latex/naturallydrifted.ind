@@ -1,0 +1,129 @@
+\begin{sphinxtheindex}
+\let\bigletter\sphinxstyleindexlettergroup
+\let\spxpagem \sphinxstyleindexpagemain
+\let\spxentry \sphinxstyleindexentry
+\let\spxextra \sphinxstyleindexextra
+
+  \bigletter {\sphinxsymbolsname}
+  \item \spxentry{\_\_init\_\_()}\spxextra{alibiDetectors.alibiDetectors method}, \hyperpage{7}
+  \item \spxentry{\_\_init\_\_()}\spxextra{base.detectorParent method}, \hyperpage{1}
+  \item \spxentry{\_\_init\_\_()}\spxextra{basicDetectors.basicDetectors method}, \hyperpage{5}
+  \item \spxentry{\_\_init\_\_()}\spxextra{distributions.distributions method}, \hyperpage{10}
+  \item \spxentry{\_\_init\_\_()}\spxextra{embedding.embedding method}, \hyperpage{9}
+  \item \spxentry{\_\_init\_\_()}\spxextra{myDetectors.myDetectors method}, \hyperpage{11}
+  \item \spxentry{\_\_init\_\_()}\spxextra{onlineDetectors.onlineDetectors method}, \hyperpage{6}
+  \item \spxentry{\_\_init\_\_()}\spxextra{sampling.samplingData method}, \hyperpage{3}
+
+  \indexspace
+  \bigletter A
+  \item \spxentry{alibiDetectors}
+    \subitem \spxentry{module}, \hyperpage{7}
+  \item \spxentry{alibiDetectors}\spxextra{class in alibiDetectors}, \hyperpage{7}
+
+  \indexspace
+  \bigletter B
+  \item \spxentry{base}
+    \subitem \spxentry{module}, \hyperpage{1}
+  \item \spxentry{baseModels}
+    \subitem \spxentry{module}, \hyperpage{9}
+  \item \spxentry{baseModels}\spxextra{class in baseModels}, \hyperpage{9}
+  \item \spxentry{basicDetectors}
+    \subitem \spxentry{module}, \hyperpage{5}
+  \item \spxentry{basicDetectors}\spxextra{class in basicDetectors}, \hyperpage{5}
+
+  \indexspace
+  \bigletter D
+  \item \spxentry{detector()}\spxextra{basicDetectors.basicDetectors method}, \hyperpage{5}
+  \item \spxentry{detector()}\spxextra{onlineDetectors.onlineDetectors method}, \hyperpage{6}
+  \item \spxentry{detectorParent}\spxextra{class in base}, \hyperpage{1}
+  \item \spxentry{dim\_reduction()}\spxextra{embedding.embedding method}, \hyperpage{9}
+  \item \spxentry{distributions}
+    \subitem \spxentry{module}, \hyperpage{10}
+  \item \spxentry{distributions}\spxextra{class in distributions}, \hyperpage{10}
+  \item \spxentry{distributions\_doc2vec()}\spxextra{distributions.distributions method}, 
+		\hyperpage{10}
+  \item \spxentry{distributions\_seneconders()}\spxextra{distributions.distributions method}, 
+		\hyperpage{11}
+  \item \spxentry{divergence\_doc2vec()}\spxextra{myDetectors.myDetectors method}, \hyperpage{12}
+  \item \spxentry{divergence\_seneconders()}\spxextra{myDetectors.myDetectors method}, 
+		\hyperpage{12}
+  \item \spxentry{doc2vec\_base()}\spxextra{baseModels.baseModels method}, \hyperpage{9}
+
+  \indexspace
+  \bigletter E
+  \item \spxentry{embed\_data()}\spxextra{embedding.embedding method}, \hyperpage{10}
+  \item \spxentry{embed\_data\_iters()}\spxextra{embedding.embedding method}, \hyperpage{10}
+  \item \spxentry{embedData()}\spxextra{basicDetectors.basicDetectors method}, \hyperpage{5}
+  \item \spxentry{embedding}
+    \subitem \spxentry{module}, \hyperpage{9}
+  \item \spxentry{embedding}\spxextra{class in embedding}, \hyperpage{9}
+
+  \indexspace
+  \bigletter F
+  \item \spxentry{final\_distributions()}\spxextra{distributions.distributions method}, 
+		\hyperpage{11}
+  \item \spxentry{final\_embeddings()}\spxextra{embedding.embedding method}, \hyperpage{10}
+
+  \indexspace
+  \bigletter J
+  \item \spxentry{js\_divergence()}\spxextra{myDetectors.myDetectors method}, \hyperpage{12}
+
+  \indexspace
+  \bigletter K
+  \item \spxentry{kde()}\spxextra{distributions.distributions method}, \hyperpage{11}
+  \item \spxentry{kl\_divergence()}\spxextra{myDetectors.myDetectors method}, \hyperpage{12}
+  \item \spxentry{ks\_doc2vec()}\spxextra{myDetectors.myDetectors method}, \hyperpage{13}
+  \item \spxentry{ks\_sbert()}\spxextra{myDetectors.myDetectors method}, \hyperpage{13}
+
+  \indexspace
+  \bigletter M
+  \item \spxentry{module}
+    \subitem \spxentry{alibiDetectors}, \hyperpage{7}
+    \subitem \spxentry{base}, \hyperpage{1}
+    \subitem \spxentry{baseModels}, \hyperpage{9}
+    \subitem \spxentry{basicDetectors}, \hyperpage{5}
+    \subitem \spxentry{distributions}, \hyperpage{10}
+    \subitem \spxentry{embedding}, \hyperpage{9}
+    \subitem \spxentry{myDetectors}, \hyperpage{11}
+    \subitem \spxentry{onlineDetectors}, \hyperpage{6}
+    \subitem \spxentry{sampling}, \hyperpage{3}
+  \item \spxentry{myDetectors}
+    \subitem \spxentry{module}, \hyperpage{11}
+  \item \spxentry{myDetectors}\spxextra{class in myDetectors}, \hyperpage{11}
+
+  \indexspace
+  \bigletter O
+  \item \spxentry{onlineDetectors}
+    \subitem \spxentry{module}, \hyperpage{6}
+  \item \spxentry{onlineDetectors}\spxextra{class in onlineDetectors}, \hyperpage{6}
+
+  \indexspace
+  \bigletter P
+  \item \spxentry{preprocess()}\spxextra{basicDetectors.basicDetectors method}, \hyperpage{5}
+  \item \spxentry{preprocess()}\spxextra{onlineDetectors.onlineDetectors method}, \hyperpage{6}
+
+  \indexspace
+  \bigletter R
+  \item \spxentry{random\_sample()}\spxextra{sampling.samplingData method}, \hyperpage{3}
+  \item \spxentry{run()}\spxextra{alibiDetectors.alibiDetectors method}, \hyperpage{8}
+  \item \spxentry{run()}\spxextra{basicDetectors.basicDetectors method}, \hyperpage{5}
+  \item \spxentry{run()}\spxextra{myDetectors.myDetectors method}, \hyperpage{13}
+  \item \spxentry{run()}\spxextra{onlineDetectors.onlineDetectors method}, \hyperpage{6}
+  \item \spxentry{run\_all()}\spxextra{basicDetectors.basicDetectors method}, \hyperpage{6}
+
+  \indexspace
+  \bigletter S
+  \item \spxentry{sample\_data\_gradual()}\spxextra{sampling.samplingData method}, \hyperpage{3}
+  \item \spxentry{sample\_data\_online()}\spxextra{sampling.samplingData method}, \hyperpage{3}
+  \item \spxentry{sample\_data\_sudden()}\spxextra{sampling.samplingData method}, \hyperpage{3}
+  \item \spxentry{sampleData()}\spxextra{basicDetectors.basicDetectors method}, \hyperpage{6}
+  \item \spxentry{sampleData()}\spxextra{embedding.embedding method}, \hyperpage{10}
+  \item \spxentry{sampleData()}\spxextra{onlineDetectors.onlineDetectors method}, \hyperpage{7}
+  \item \spxentry{samples()}\spxextra{sampling.samplingData method}, \hyperpage{3}
+  \item \spxentry{sampling}
+    \subitem \spxentry{module}, \hyperpage{3}
+  \item \spxentry{samplingData}\spxextra{class in sampling}, \hyperpage{3}
+  \item \spxentry{sbert\_base()}\spxextra{baseModels.baseModels method}, \hyperpage{9}
+  \item \spxentry{SBERT\_model}\spxextra{baseModels.baseModels attribute}, \hyperpage{9}
+
+\end{sphinxtheindex}

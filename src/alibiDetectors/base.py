@@ -2,6 +2,7 @@ from typing import Dict, Optional, Union
 import numpy as np
 from transformers import AutoTokenizer
 import torch
+import torch.nn as nn
 
 class detectorParent:
     def __init__(self,
@@ -24,7 +25,7 @@ class detectorParent:
                 # other functions
                 plot: bool = True,
 
-                # AlibiDetector functions related specifications
+                # general Alibi Detector parameters
                 emb_type: Optional[Union['pooler_output', 'last_hidden_state', 'hidden_state', 'hidden_state_cls']] = 'hidden_state',
                 n_layers: Optional[int] = 9,
                 max_len: Optional[int] = 200,
@@ -32,14 +33,17 @@ class detectorParent:
                 batch_size: Optional[int] = 32,
                 tokenizer_size: Optional[int] = 3, # keep it small else computer breaks down 
 
-                # online detector related specifications
+                # Alibi Detectors: learned kernel detector parameters 
+                proj = nn.Sequential(),
+
+                # Alibi Detectors: online detector parameters
                 ert: Optional[int] = 50, 
                 window_size: Optional[int] = 10, 
                 n_runs: Optional[int] = 3, 
                 n_bootstraps: Optional[int]= 250,
 
-                # context detector related specifications
-                context: Optional[str] = 'subpopulation', 
+                # Alibi Detectors: context detector parameters
+                context: Optional[Union['subpopulation', None]] = 'subpopulation'
                  ):
         """
         In this class, we define the base arguments and parameters that are required by Alibi
@@ -146,6 +150,8 @@ class detectorParent:
         self.tokenizer_size = tokenizer_size
         self.tokenizer = AutoTokenizer.from_pretrained(SBERT_model)
         self.batch_size = batch_size   
+
+        self.proj = proj
 
         self.ert = ert
         self.window_size = window_size
