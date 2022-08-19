@@ -43,7 +43,7 @@ class detectorParent:
                 n_bootstraps: Optional[int]= 250,
 
                 # Alibi Detectors: context detector parameters
-                context: Optional[Union['subpopulation', None]] = 'subpopulation'
+                context: Optional[Union['subpopulation', None]] = None
                  ):
         """
         In this class, we define the base arguments and parameters that are required by Alibi
